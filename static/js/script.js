@@ -182,8 +182,8 @@ $('#videoUpload').on('change', function (e) {
                 $('#eventList').append(`
                     <li class="list-group-item event-item" data-seconds="${event.seconds}">
                         <strong>${event.label}:</strong> ${event.seconds.toFixed(2)}s (${event.team})
-                        <button class="btn btn-sm btn-warning float-end me-2" onclick="editEvent(${index})">Edit</button>
-                        <button class="btn btn-sm btn-danger float-end" onclick="deleteEvent(${index})">Delete</button>
+                        <button class="btn btn-sm btn-danger float-end" style="margin-left: 10px; "width: 70px;" onclick="deleteEvent(${index})">Delete</button>
+                        <button class="btn btn-sm btn-warning float-end me-2" style="width: 70px;" onclick="editEvent(${index})">Edit</button>
                     </li>
                 `);
             } else {

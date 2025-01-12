@@ -7,12 +7,12 @@
     "gameScore": "2 - 3",
     "annotations": [
         {
-            "gameTime": "2 - 03:56.000",
-            "label": "Shot",
-            "position": "4000",
             "seconds": 2936,
+            "label": "Shot",
+            "position": null,
             "team": "away",
-            "visibility": "visible"
+            "visibility": "visible",
+            "gameTime": "2 - 03:56.000"
         },
         {
             "gameTime": "2 - 04:36.320",
@@ -847,12 +847,12 @@
             "visibility": "visible"
         },
         {
-            "seconds": 1200,
+            "gameTime": "1 - 20:00.000",
             "label": "Corner",
             "position": 0,
+            "seconds": 1200,
             "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "1 - 20:00.000"
+            "visibility": "not_applicable"
         }
     ]
 }
