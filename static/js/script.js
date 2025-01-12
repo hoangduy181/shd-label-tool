@@ -1,4 +1,5 @@
 $(document).ready(function () {
+    //update
     let videoPlayer = document.getElementById('videoPlayer');
     let videoFile = null;
     let annotations = []; // Initialize as an empty array
@@ -266,11 +267,7 @@ $('#videoUpload').on('change', function (e) {
                 const team = $('#team').val();
                 const visibility = $('#visibility').val();
 
-<<<<<<< HEAD
-                if (isNaN(seconds) || !label  || !team || !visibility) {
-=======
                 if (isNaN(seconds) || !label || !team || !visibility) {
->>>>>>> 9abd7559293f6080cb52e4af831350ceafd7fb33
                     alert('Please fill all fields correctly.');
                     return;
                 }
