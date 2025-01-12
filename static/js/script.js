@@ -192,7 +192,7 @@ $('#videoUpload').on('change', function (e) {
         });
     
         // Update seek bar markers
-        updateSeekBarMarkers();
+        //updateSeekBarMarkers();
 
         // Add click event to each event item to seek to the corresponding time
         $('.event-item').on('click', function() {
@@ -284,12 +284,12 @@ $('#videoUpload').on('change', function (e) {
 
     // Update seek bar markers when the video metadata is loaded
     videoPlayer.addEventListener('loadedmetadata', function () {
-        updateSeekBarMarkers();
+        //updateSeekBarMarkers();
     });
 
     // Update seek bar markers when the video is seeked
     videoPlayer.addEventListener('seeked', function () {
-        updateSeekBarMarkers();
+       // updateSeekBarMarkers();
     });
 
     // Set up playback speed control
