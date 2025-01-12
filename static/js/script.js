@@ -266,7 +266,7 @@ $('#videoUpload').on('change', function (e) {
                 const team = $('#team').val();
                 const visibility = $('#visibility').val();
 
-                if (isNaN(seconds) || !label || isNaN(position) || !team || !visibility) {
+                if (isNaN(seconds) || !label || !team || !visibility) {
                     alert('Please fill all fields correctly.');
                     return;
                 }
