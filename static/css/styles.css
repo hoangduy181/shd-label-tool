@@ -19,6 +19,7 @@ body {
 
 .modal-content {
     border-radius: 10px;
+    z-index: 1050;
 }
 
 .modal-header {
@@ -77,4 +78,8 @@ body {
     position: relative;
     height: 10px;
     background-color: #ddd;
+}
+
+.modal-backdrop {
+    z-index: 1040;
 }

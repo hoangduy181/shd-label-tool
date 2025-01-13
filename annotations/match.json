@@ -7,12 +7,12 @@
     "gameScore": "2 - 3",
     "annotations": [
         {
-            "seconds": 2936,
-            "label": "Shot",
+            "gameTime": "2 - 04:10.680",
+            "label": "Red card",
             "position": null,
-            "team": "away",
-            "visibility": "visible",
-            "gameTime": "2 - 03:56.000"
+            "seconds": 2950.68,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
         },
         {
             "gameTime": "2 - 04:36.320",
@@ -43,14 +43,6 @@
             "label": "Challenge",
             "position": "8000",
             "seconds": 2997.6,
-            "team": "away",
-            "visibility": "visible"
-        },
-        {
-            "gameTime": "2 - 05:17.600",
-            "label": "Goal",
-            "position": "9000",
-            "seconds": 3017.6,
             "team": "away",
             "visibility": "visible"
         },
@@ -247,10 +239,10 @@
             "visibility": "visible"
         },
         {
-            "gameTime": "2 - 20:49.120",
+            "gameTime": "2 - 20:59.120",
             "label": "Foul",
-            "position": "34000",
-            "seconds": 3949.12,
+            "position": null,
+            "seconds": 3959.12,
             "team": "away",
             "visibility": "visible"
         },
@@ -831,12 +823,12 @@
             "visibility": "visible"
         },
         {
-            "gameTime": "2 - 14:25.880",
-            "label": "Goal",
-            "position": "107000",
-            "seconds": 6265.88,
-            "team": "away",
-            "visibility": "visible"
+            "gameTime": "1 - 00:19.850",
+            "label": "Challenge",
+            "position": null,
+            "seconds": 19.85,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
         },
         {
             "gameTime": "1 - 00:00.700",
@@ -853,6 +845,30 @@
             "seconds": 1200,
             "team": "not_applicable",
             "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 00:00.000",
+            "label": "Kickoff",
+            "position": 0,
+            "seconds": 0,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 00:00.010",
+            "label": "Kickoff",
+            "position": 0,
+            "seconds": 0.01,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "seconds": 10,
+            "label": "Kickoff",
+            "position": 0,
+            "team": "not_applicable",
+            "visibility": "not_applicable",
+            "gameTime": "1 - 00:10.000"
         }
     ]
 }
