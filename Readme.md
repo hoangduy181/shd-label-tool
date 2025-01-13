@@ -69,6 +69,8 @@ This application is intended to be used with SoccerNet annotations to ease the p
 - **Upload a Video**:
   - Click the "Choose File" button to upload a video.
   - Once uploaded, the video will be displayed in the player.
+  - make sure that the corresponding annotion file is located in annotions folder with the same name as your video
+  - Also , See the structure of the json annotion file the app work with ( example can be found [annotations_output.json])
 
 - **Add Annotations**:
   - Use the "Add Event" button to open the annotation modal.
