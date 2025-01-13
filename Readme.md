@@ -7,7 +7,8 @@ This application is intended to be used with SoccerNet annotations to ease the p
 
 
 ## Demo
-[here](recording.webm).
+
+[recording.webm](https://github.com/user-attachments/assets/2a80b3cb-3144-48d3-be9d-53f0fff44b4c)
 
 
 ## Features
@@ -41,7 +42,7 @@ This application is intended to be used with SoccerNet annotations to ease the p
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/your-username/football-video-annotation-tool.git
+   git clone https://github.com/ibrahimabdelaal/Soccer-event-annotation-tool.git
    cd football-video-annotation-tool
    ```
 
@@ -84,11 +85,4 @@ This application is intended to be used with SoccerNet annotations to ease the p
 - **Load Annotations**:
   - When reopening a video, annotations will be loaded automatically if a corresponding JSON file exists.
 
-## Demo
 
-Here is a demo of the Football Video Annotation Tool:
-
-### Video Demo
-
-### Website Image
-![Website Screenshot](image.JPG)
