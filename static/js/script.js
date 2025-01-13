@@ -4,7 +4,50 @@ $(document).ready(function () {
     let videoFile = null;
     let annotations = []; // Array to store annotations
     let isSeeking = false; // Flag to prevent multiple seeks
+    // Function to toggle fullscreen mode
+    function toggleFullscreen() {
+        const videoContainer = document.getElementById('videoContainer');
 
+        if (!document.fullscreenElement) {
+            // Enter fullscreen mode
+            if (videoContainer.requestFullscreen) {
+                videoContainer.requestFullscreen();
+            } else if (videoContainer.mozRequestFullScreen) { // Firefox
+                videoContainer.mozRequestFullScreen();
+            } else if (videoContainer.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                videoContainer.webkitRequestFullscreen();
+            } else if (videoContainer.msRequestFullscreen) { // IE/Edge
+                videoContainer.msRequestFullscreen();
+            }
+        } else {
+            // Exit fullscreen mode
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) { // Firefox
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { // IE/Edge
+                document.msExitFullscreen();
+            }
+        }
+    }
+
+    // Add event listener for fullscreen change
+    document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement) {
+            console.log('Entered fullscreen mode');
+        } else {
+            console.log('Exited fullscreen mode');
+        }
+    });
+
+    // Optional: Add a button to toggle fullscreen mode
+    // const fullscreenButton = document.createElement('button');
+    // fullscreenButton.textContent = 'Toggle Fullscreen';
+    // fullscreenButton.classList.add('btn', 'btn-secondary', 'mt-3');
+    // fullscreenButton.addEventListener('click', toggleFullscreen);
+    // document.querySelector('.col-md-8').appendChild(fullscreenButton);
     // Function to convert gameTime to seconds
     function parseGameTimeToSeconds(gameTime) {
         const [half, time] = gameTime.split(' - ');
@@ -18,7 +61,7 @@ $(document).ready(function () {
     // Function to convert seconds to gameTime format
     function convertSecondsToGameTime(seconds) {
         const half = seconds < 2700 ? '1' : '2'; // First half is 0-2700 seconds (45 minutes)
-        const minutes = Math.floor((seconds % 2700) / 60); // Minutes in the current half
+        const minutes = Math.floor((seconds) / 60); // Minutes in the current half
         const secs = (seconds % 60).toFixed(3); // Seconds with milliseconds
         return `${half} - ${String(minutes).padStart(2, '0')}:${String(secs).padStart(6, '0')}`;
     }
@@ -319,6 +362,11 @@ $(document).ready(function () {
                     videoPlayer.pause();
                 }
                 e.preventDefault(); // Prevent scrolling the page
+                break;
+            case 'Enter':
+                // Enter key to trigger the "Add Event" button
+                $('#addEventBtn').click(); // Simulate click on the add event button
+                e.preventDefault(); // Prevent default action
                 break;
             case 'ArrowUp':
                 // Increase volume
