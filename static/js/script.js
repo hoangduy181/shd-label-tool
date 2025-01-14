@@ -84,8 +84,19 @@ $(document).ready(function () {
             alert('Please fill all fields correctly.');
             return;
         }
+            // Check for existing event within the same 4 seconds
+        const existingEvent = annotations.find(event => 
+            event.label === label &&
+            event.team === team &&
+            event.visibility === visibility &&
+            Math.abs(event.seconds - seconds) < 4 // Check if within 4 seconds
+        );
 
-        const newAnnotation = { seconds, label, position, team, visibility };
+        if (existingEvent) {
+            alert('An event with the same label, team, and visibility already exists within 4 seconds.');
+            return; // Prevent saving the new event
+        }
+            const newAnnotation = { seconds, label, position, team, visibility };
         addAnnotation(newAnnotation);
         $('#addEventModal').modal('hide');
     });
