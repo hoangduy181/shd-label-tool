@@ -1,99 +1,42 @@
 $(document).ready(function () {
     // Initialize variables
-    let videoPlayer = document.getElementById('videoPlayer');
+    const videoPlayer = document.getElementById('videoPlayer');
     let videoFile = null;
-    let annotations = []; // Array to store annotations
-    let isSeeking = false; // Flag to prevent multiple seeks
-    // Function to toggle fullscreen mode
-    function toggleFullscreen() {
-        const videoContainer = document.getElementById('videoContainer');
+    let annotations = [];
+    let isSeeking = false;
 
-        if (!document.fullscreenElement) {
-            // Enter fullscreen mode
-            if (videoContainer.requestFullscreen) {
-                videoContainer.requestFullscreen();
-            } else if (videoContainer.mozRequestFullScreen) { // Firefox
-                videoContainer.mozRequestFullScreen();
-            } else if (videoContainer.webkitRequestFullscreen) { // Chrome, Safari, Opera
-                videoContainer.webkitRequestFullscreen();
-            } else if (videoContainer.msRequestFullscreen) { // IE/Edge
-                videoContainer.msRequestFullscreen();
-            }
-        } else {
-            // Exit fullscreen mode
-            if (document.exitFullscreen) {
-                document.exitFullscreen();
-            } else if (document.mozCancelFullScreen) { // Firefox
-                document.mozCancelFullScreen();
-            } else if (document.webkitExitFullscreen) { // Chrome, Safari, Opera
-                document.webkitExitFullscreen();
-            } else if (document.msExitFullscreen) { // IE/Edge
-                document.msExitFullscreen();
-            }
-        }
-    }
-
-    // Add event listener for fullscreen change
-    document.addEventListener('fullscreenchange', () => {
-        if (document.fullscreenElement) {
-            console.log('Entered fullscreen mode');
-        } else {
-            console.log('Exited fullscreen mode');
-        }
-    });
-
-    // Optional: Add a button to toggle fullscreen mode
-    // const fullscreenButton = document.createElement('button');
-    // fullscreenButton.textContent = 'Toggle Fullscreen';
-    // fullscreenButton.classList.add('btn', 'btn-secondary', 'mt-3');
-    // fullscreenButton.addEventListener('click', toggleFullscreen);
-    // document.querySelector('.col-md-8').appendChild(fullscreenButton);
     // Function to convert gameTime to seconds
     function parseGameTimeToSeconds(gameTime) {
         const [half, time] = gameTime.split(' - ');
         const [minutes, seconds] = time.split(':');
         const totalSeconds = parseFloat(minutes) * 60 + parseFloat(seconds);
-
-        // Add 45 minutes for the second half
         return half === '2' ? totalSeconds + (45 * 60) : totalSeconds;
     }
 
     // Function to convert seconds to gameTime format
     function convertSecondsToGameTime(seconds) {
-        const half = seconds < 2700 ? '1' : '2'; // First half is 0-2700 seconds (45 minutes)
-        const minutes = Math.floor((seconds) / 60); // Minutes in the current half
-        const secs = (seconds % 60).toFixed(3); // Seconds with milliseconds
+        const half = seconds < 2700 ? '1' : '2';
+        const minutes = Math.floor(seconds / 60);
+        const secs = (seconds % 60).toFixed(3);
         return `${half} - ${String(minutes).padStart(2, '0')}:${String(secs).padStart(6, '0')}`;
     }
 
     // Function to get color for an event type
     function getEventColor(label) {
         const colors = {
-            'Kickoff': '#FF5733',
-            'Shot': '#33FF57',
-            'Goal': '#3357FF',
-            'Foul': '#FF33A1',
-            'Penalty': '#A133FF',
-            'Challenge': '#33FFF5',
-            'Free kick': '#F5FF33',
-            'Corner': '#FF8C33',
-            'Offside': '#8C33FF',
-            'Substitute': '#33FF8C',
-            'Caution': '#FF3333',
-            'Yellow card': '#FFFF33',
-            'Red card': '#FF3333',
-            'Save': '#33FF33',
-            'Clearance': '#3333FF',
-            'Out of play': '#888888'
+            'Kickoff': '#FF5733', 'Shot': '#33FF57', 'Goal': '#3357FF', 'Foul': '#FF33A1',
+            'Penalty': '#A133FF', 'Challenge': '#33FFF5', 'Free kick': '#F5FF33', 'Corner': '#FF8C33',
+            'Offside': '#8C33FF', 'Substitute': '#33FF8C', 'Caution': '#FF3333', 'Yellow card': '#FFFF33',
+            'Red card': '#FF3333', 'Save': '#33FF33', 'Clearance': '#3333FF', 'Out of play': '#888888'
         };
-        return colors[label] || '#000000'; // Default to black if label not found
+        return colors[label] || '#000000';
     }
 
     // Handle video upload
     $('#videoUpload').on('change', function (e) {
         videoFile = e.target.files[0];
         if (videoFile) {
-            let formData = new FormData();
+            const formData = new FormData();
             formData.append('video', videoFile);
 
             $.ajax({
@@ -105,20 +48,10 @@ $(document).ready(function () {
                 success: function (response) {
                     videoPlayer.src = `/uploads/${response.filename}`;
                     videoPlayer.load();
-
-                    // Extract the annotations array from the response
-                    if (response.annotations && Array.isArray(response.annotations.annotations)) {
-                        annotations = response.annotations.annotations; // Correctly assign the annotations array
-                        console.log('Annotations loaded:', annotations); // Debugging
-                    } else {
-                        annotations = []; // Default to an empty array if annotations are not found
-                        console.warn('No valid annotations found in response:', response);
-                    }
-
-                    // Update the UI with the loaded annotations
+                    annotations = response.annotations?.annotations || [];
                     updateEventList();
                 },
-                error: function (xhr) {
+                error: function () {
                     alert('Error uploading video');
                 }
             });
@@ -126,98 +59,58 @@ $(document).ready(function () {
     });
 
     // Open modal to add event
-    $('#addEventBtn').on('click', function () {
+    $('#addEventBtn').off('click').on('click', function () {
         if (!videoFile) {
             alert('Please upload a video first');
             return;
         }
 
-        // Reset modal input values
-        $('#seconds').val(videoPlayer.currentTime.toFixed(2)); // Set to current video time in seconds
-        $('#label').val($('#eventFilter').val() || 'Kickoff'); // Set to selected filter or 'Kickoff'
-        $('#team').val('not_applicable'); // Set to 'Not Applicable' by default
-        $('#visibility').val('not_applicable'); // Set to 'Not Applicable' by default
+        $('#seconds').val(videoPlayer.currentTime.toFixed(2));
+        $('#label').val($('#eventFilter').val() || 'Kickoff');
+        $('#team').val('not_applicable');
+        $('#visibility').val('not_applicable');
 
-        // Show the modal
         $('#addEventModal').modal('show');
-        console.log("New annotation event triggered");
-        $('#saveEventBtn').off('click').on('click', function () {
-            console.log("save event triggered");
-            const seconds = parseFloat($('#seconds').val());
-            const label = $('#label').val();
-            const position = parseInt($('#position').val()) || 0; // Default to 0 if not filled
-            const team = $('#team').val();
-            const visibility = $('#visibility').val();
-    
-            // Check if the event already exists
-            const eventExists = annotations.some(annotation => 
-                annotation.seconds === seconds &&
-                annotation.label === label &&
-                annotation.team === team &&
-                annotation.visibility === visibility
-            );
 
-            if (eventExists) {
-                alert('This event already exists.');
-                return; // Exit the function if the event already exists
-            }
+          // Save event from modal
+    $('#saveEventBtn').off('click').on('click', function () {
+        const seconds = parseFloat($('#seconds').val());
+        const label = $('#label').val();
+        const position = parseInt($('#position').val()) || 0;
+        const team = $('#team').val();
+        const visibility = $('#visibility').val();
 
-            // Create a new annotation object
-            const newAnnotation = {
-                seconds,  // Use seconds for calculations
-                label,
-                position,  // Use the default value if not filled
-                team,
-                visibility
-            };
-            console.log("New annotation created:", newAnnotation);
-            annotations.push(newAnnotation);
-            updateEventList();
-            $('#addEventModal').modal('hide'); // Hide the modal
-        });
+        if (isNaN(seconds) || !label || !team || !visibility) {
+            alert('Please fill all fields correctly.');
+            return;
+        }
+
+        const newAnnotation = { seconds, label, position, team, visibility };
+        annotations.push(newAnnotation);
+        annotations.sort((a, b) => a.seconds - b.seconds);
+        console.log("adding event saved")
+        updateEventList();
+        $('#addEventModal').modal('hide');
     });
 
-    // // Handle modal shown event
-    // $('#addEventModal').on('shown.bs.modal', function () {
-    //     // Set aria-hidden to false when the modal is shown
-    //     $('#addEventModal').attr('aria-hidden', 'false');
+    });
 
-    //     // Move focus to the first input field in the modal
-    //     $('#label').focus();
-    // });
-
-    // // Handle modal hidden event
-    // $('#addEventModal').on('hidden.bs.modal', function () {
-    //     // Set aria-hidden to true when the modal is hidden
-    //     $('#addEventModal').attr('aria-hidden', 'true');
-
-    //     // Return focus to the "Add Event" button
-    //     $('#addEventBtn').focus();
-    // });
-
-    // Save event from modal
-    
-
+  
     // Save annotations
     $('#saveAnnotationsBtn').on('click', function () {
-        if (!videoFile || !Array.isArray(annotations) || annotations.length === 0) {
+        if (!videoFile || annotations.length === 0) {
             alert('No annotations to save');
             return;
         }
 
-        // Get the filename of the uploaded video
-        const filename = videoFile.name;
-
-        // Prepare the data to match the backend's expected format
         const dataToSave = {
-            filename: filename, // Include the filename
+            filename: videoFile.name,
             annotations: annotations.map(annotation => ({
                 ...annotation,
-                gameTime: convertSecondsToGameTime(annotation.seconds) // Convert back to gameTime for saving
+                gameTime: convertSecondsToGameTime(annotation.seconds)
             }))
         };
 
-        // Send the data to the server
         $.ajax({
             url: '/save_annotations',
             type: 'POST',
@@ -226,94 +119,64 @@ $(document).ready(function () {
             success: function () {
                 alert('Annotations saved successfully');
             },
-            error: function (xhr) {
+            error: function () {
                 alert('Error saving annotations');
             }
         });
     });
 
     // Filter events by type
-    $('#eventFilter').on('change', function () {
-        updateEventList();
-    });
+    $('#eventFilter').on('change', updateEventList);
 
     // Update event list and seek bar markers
     function updateEventList() {
         const filter = $('#eventFilter').val();
+        const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
 
-        // Filter annotations based on the selected filter
-        const filteredAnnotations = filter === 'all'
-            ? annotations
-            : annotations.filter(event => event.label === filter);
-
-        // Clear the event list
         $('#eventList').empty();
-
-        // Add filtered events to the event list
         filteredAnnotations.forEach((event, index) => {
-            // Ensure the event has a valid `seconds` property
             if (typeof event.seconds === 'number' && !isNaN(event.seconds)) {
                 $('#eventList').append(`
                     <li class="list-group-item event-item" data-seconds="${event.seconds}">
-                        <strong>${event.label}:</strong> ${event.seconds.toFixed(2)}s (${event.team})
-                        <button class="btn btn-sm btn-danger float-end" style="margin-left: 10px; width: 70px;" onclick="deleteEvent(${index})">Delete</button>
-                        <button class="btn btn-sm btn-warning float-end me-2" style="width: 70px;" onclick="editEvent(${index})">Edit</button>
+                        <strong>${event.label}:</strong> ${formatTime(event.seconds)} (${event.team})
+                        <button class="btn btn-sm btn-danger float-end" onclick="deleteEvent(${index})">Delete</button>
+                        <button class="btn btn-sm btn-warning float-end me-2" onclick="editEvent(${index})">Edit</button>
                     </li>
                 `);
-            } else {
-                console.warn('Invalid annotation (missing or invalid `seconds` property):', event);
             }
         });
 
-        // Add click event to each event item to seek to the corresponding time
-        $('.event-item').on('click', function () {
+        $('.event-item').off('click').on('click', function () {
             const seconds = parseFloat($(this).data('seconds'));
-            if (!isNaN(seconds)) {
-                videoPlayer.currentTime = seconds; // Seek to the event time
-                //videoPlayer.play(); // Optionally, start playing the video
-            }
+            if (!isNaN(seconds)) videoPlayer.currentTime = seconds;
         });
     }
 
     // Delete event
     window.deleteEvent = function (index) {
-        console.log("Deleting event at index:", index); // Debugging
         const filter = $('#eventFilter').val();
-        const filteredAnnotations = filter === 'all'
-            ? annotations
-            : annotations.filter(event => event.label === filter);
+        const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
 
         if (index >= 0 && index < filteredAnnotations.length) {
-            const originalIndex = annotations.indexOf(filteredAnnotations[index]); // Find the original index
-            annotations.splice(originalIndex, 1); // Remove the event from the original annotations array
-            updateEventList(); // Refresh the event list
-            console.log("Annotations after deletion:", annotations); // Debugging
-        } else {
-            console.error("Invalid index for deletion:", index); // Debugging
+            annotations.splice(annotations.indexOf(filteredAnnotations[index]), 1);
+            updateEventList();
         }
     };
 
     // Edit event
     window.editEvent = function (index) {
         const filter = $('#eventFilter').val();
-        const filteredAnnotations = filter === 'all'
-            ? annotations
-            : annotations.filter(event => event.label === filter);
+        const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
 
         if (index >= 0 && index < filteredAnnotations.length) {
             const event = filteredAnnotations[index];
-
-            // Populate the modal with the event's current details
             $('#seconds').val(event.seconds);
             $('#label').val(event.label);
             $('#position').val(event.position);
             $('#team').val(event.team);
             $('#visibility').val(event.visibility);
 
-            // Show the modal
             $('#addEventModal').modal('show');
-
-            // Update the save button to handle editing
             $('#saveEventBtn').off('click').on('click', function () {
                 const seconds = parseFloat($('#seconds').val());
                 const label = $('#label').val();
@@ -325,75 +188,77 @@ $(document).ready(function () {
                     alert('Please fill all fields correctly.');
                     return;
                 }
-                else {
-                   // alert('event edited sucessfultty.');
-                }
 
-                // Find the original index to update
-                const originalIndex = annotations.indexOf(event); // Find the original index
-                annotations[originalIndex] = { seconds, label, position, team, visibility }; // Update the event in the original annotations array
+                annotations[annotations.indexOf(event)] = { seconds, label, position, team, visibility };
                 updateEventList();
-                $('#addEventModal').modal('hide');
+                //$('#addEventModal').modal('hide');
             });
-        } else {
-            console.error("Invalid index for editing:", index); // Debugging
         }
     };
 
-    // Set up playback speed control
+    // Format time as MM:SS
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // Playback speed control
     $('#playbackSpeed').on('change', function () {
         videoPlayer.playbackRate = parseFloat($(this).val());
     });
 
-    // Set up volume control
+    // Volume control
     $('#volumeControl').on('input', function () {
         videoPlayer.volume = parseFloat($(this).val());
     });
 
     // Keyboard shortcuts
     $(document).on('keydown', function (e) {
-        if (isSeeking) return; // Prevent further seeks if already seeking
+        if (isSeeking) return;
+
         switch (e.key) {
             case ' ':
-                // Spacebar for play/pause
-                if (videoPlayer.paused) {
-                    videoPlayer.play();
-                } else {
-                    videoPlayer.pause();
+                e.preventDefault();
+                if (document.activeElement !== videoPlayer) {
+                    videoPlayer.focus();
+                    videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
                 }
-                e.preventDefault(); // Prevent scrolling the page
                 break;
             case 'Enter':
-                // Enter key to trigger the "Add Event" button
-                $('#addEventBtn').click(); // Simulate click on the add event button
-                e.preventDefault(); // Prevent default action
+                $('#addEventBtn').click();
+                e.preventDefault();
                 break;
             case 'ArrowUp':
-                // Increase volume
-                if (videoPlayer.volume < 1) {
-                    videoPlayer.volume = Math.min(videoPlayer.volume + 0.1, 1);
-                    $('#volumeControl').val(videoPlayer.volume); // Update the volume control
-                }
+                videoPlayer.volume = Math.min(videoPlayer.volume + 0.1, 1);
+                $('#volumeControl').val(videoPlayer.volume);
                 break;
             case 'ArrowDown':
-                // Decrease volume
-                if (videoPlayer.volume > 0) {
-                    videoPlayer.volume = Math.max(videoPlayer.volume - 0.1, 0);
-                    $('#volumeControl').val(videoPlayer.volume); // Update the volume control
-                }
+                videoPlayer.volume = Math.max(videoPlayer.volume - 0.1, 0);
+                $('#volumeControl').val(videoPlayer.volume);
                 break;
             case 'ArrowRight':
-                isSeeking = true; // Set the flag to true
+                isSeeking = true;
                 videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 5, videoPlayer.duration);
-                setTimeout(() => isSeeking = false, 200); // Reset the flag after 200ms
+                setTimeout(() => isSeeking = false, 200);
                 break;
             case 'ArrowLeft':
-                isSeeking = true; // Set the flag to true
+                isSeeking = true;
                 videoPlayer.currentTime = Math.max(videoPlayer.currentTime - 5, 0);
-                setTimeout(() => isSeeking = false, 200); // Reset the flag after 200ms
+                setTimeout(() => isSeeking = false, 200);
                 break;
-            default:
-                break;
+        }
+    });
+
+    // Handle full-screen changes
+    document.addEventListener('fullscreenchange', () => {
+        const modal = $('#addEventModal');
+        if (document.fullscreenElement === videoPlayer) {
+            videoPlayer.parentNode.appendChild(modal[0]);
+            modal.css('z-index', '10500');
+        } else {
+            document.body.appendChild(modal[0]);
+            modal.css('z-index', '');
         }
     });
 });
