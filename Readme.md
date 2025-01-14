@@ -8,7 +8,8 @@ This application is intended to be used with SoccerNet annotations to ease the p
 
 ## Demo
 
-[recording.webm](https://github.com/user-attachments/assets/2a80b3cb-3144-48d3-be9d-53f0fff44b4c)
+[demo.webm](https://github.com/user-attachments/assets/6e7c220a-fda1-45c5-8002-b4599f09f846)
+
 
 
 ## Features
