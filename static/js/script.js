@@ -86,10 +86,7 @@ $(document).ready(function () {
         }
 
         const newAnnotation = { seconds, label, position, team, visibility };
-        annotations.push(newAnnotation);
-        annotations.sort((a, b) => a.seconds - b.seconds);
-        console.log("adding event saved")
-        updateEventList();
+        addAnnotation(newAnnotation);
         $('#addEventModal').modal('hide');
     });
 
@@ -189,9 +186,8 @@ $(document).ready(function () {
                     return;
                 }
 
-                annotations[annotations.indexOf(event)] = { seconds, label, position, team, visibility };
-                updateEventList();
-                //$('#addEventModal').modal('hide');
+                editAnnotation(index, { seconds, label, position, team, visibility });
+                $('#addEventModal').modal('hide');
             });
         }
     };
@@ -238,18 +234,65 @@ $(document).ready(function () {
                 $('#volumeControl').val(videoPlayer.volume);
                 break;
             case 'ArrowRight':
+                e.preventDefault();
+                console.log('ArrowRight');
+                
+                if (document.activeElement !== videoPlayer) {
+                    videoPlayer.focus();
+                }
                 isSeeking = true;
-                videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 5, videoPlayer.duration);
-                setTimeout(() => isSeeking = false, 200);
+                videoPlayer.currentTime = Math.min(videoPlayer.currentTime -50 , videoPlayer.duration);
+                if (videoPlayer.duration-videoPlayer.currentTime <=60){
+                    videoPlayer.currentTime = Math.max(currentVideoTime +10, 0);
+                }
+                setTimeout(() => {
+                    isSeeking = false;
+                }, 200);
                 break;
             case 'ArrowLeft':
+                e.preventDefault();
                 isSeeking = true;
-                videoPlayer.currentTime = Math.max(videoPlayer.currentTime - 5, 0);
-                setTimeout(() => isSeeking = false, 200);
+                if (document.activeElement !== videoPlayer) {
+                    videoPlayer.focus();
+                }
+                if (videoPlayer.currentTime <=60){
+                    ti=videoPlayer.currentTime
+                    videoPlayer.currentTime = Math.max(currentVideoTime -10, 0);
+                }
+                else {
+                videoPlayer.currentTime = Math.max(videoPlayer.currentTime +50, 0);}
+
+                setTimeout(() => {
+                    isSeeking = false;
+                }, 200);
                 break;
         }
     });
-
+    let currentVideoTime = 0; // Global variable to store the current time of the video
+    let timeUpdateInterval; // Variable to hold the interval ID
+    
+    // Function to start updating the current video time
+    function startUpdatingCurrentTime() {
+        // Clear any existing interval to avoid multiple intervals running
+        clearInterval(timeUpdateInterval);
+    
+        // Set up an interval to update the current time every second
+        timeUpdateInterval = setInterval(() => {
+            currentVideoTime = videoPlayer.currentTime; // Update the global variable
+            console.log(`Current Video Time: ${currentVideoTime}`); // Optional: log the current time
+        }, 1000); // Update every 1000 milliseconds (1 second)
+    }
+    
+    // Function to stop updating the current time
+    function stopUpdatingCurrentTime() {
+        clearInterval(timeUpdateInterval); // Clear the interval
+    }
+    
+    // Event listeners for video play and pause
+    videoPlayer.addEventListener('play', startUpdatingCurrentTime);
+    videoPlayer.addEventListener('pause', stopUpdatingCurrentTime);
+    videoPlayer.addEventListener('ended', stopUpdatingCurrentTime);
+    
     // Handle full-screen changes
     document.addEventListener('fullscreenchange', () => {
         const modal = $('#addEventModal');
@@ -261,4 +304,20 @@ $(document).ready(function () {
             modal.css('z-index', '');
         }
     });
+
+    // Function to add a new annotation
+    function addAnnotation(newAnnotation) {
+        annotations.push(newAnnotation);
+        // Sort annotations by seconds to maintain order
+        annotations.sort((a, b) => a.seconds - b.seconds);
+        updateEventList(); // Update the UI with the sorted annotations
+    }
+
+    // Function to edit an existing annotation
+    function editAnnotation(originalIndex, updatedAnnotation) {
+        annotations[originalIndex] = updatedAnnotation; // Update the event in the original annotations array
+        // Sort annotations by seconds to maintain order
+        annotations.sort((a, b) => a.seconds - b.seconds);
+        updateEventList(); // Update the UI with the sorted annotations
+    }
 });
