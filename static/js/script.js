@@ -59,12 +59,17 @@ $(document).ready(function () {
     });
 
     // Open modal to add event
+    let wasPlaying = false; // Global variable to track if the video was playing
     $('#addEventBtn').off('click').on('click', function () {
         if (!videoFile) {
             alert('Please upload a video first');
             return;
         }
-
+            // Pause the video if it's playing
+        if (!videoPlayer.paused) {
+            wasPlaying = true; // Track that the video was playing
+            videoPlayer.pause(); // Pause the video
+        }
         $('#seconds').val(videoPlayer.currentTime.toFixed(2));
         $('#label').val($('#eventFilter').val() || 'Kickoff');
         $('#team').val('not_applicable');
@@ -99,6 +104,10 @@ $(document).ready(function () {
             const newAnnotation = { seconds, label, position, team, visibility };
         addAnnotation(newAnnotation);
         $('#addEventModal').modal('hide');
+        if (wasPlaying) {
+            videoPlayer.play(); // Resume playing the video
+            wasPlaying = false; // Reset the flag
+        }
     });
 
     });

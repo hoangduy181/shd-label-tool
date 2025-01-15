@@ -1,7 +1,10 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 import os
 import cv2
+import re
 import json
+import re
+from collections import OrderedDict
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
@@ -37,12 +40,28 @@ def upload_video():
 
     # Load annotations for the video
     annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{video_file.filename.split(".")[0]}.json')
-    add_seconds_to_events(annotation_path)
+    
     if os.path.exists(annotation_path):
+        
         with open(annotation_path, 'r') as f:
             annotations = json.load(f)
     else:
-        annotations = []
+           original_data = {
+            "UrlLocal": "",
+            "UrlYoutube": "",
+            "gameHomeTeam": "",
+            "gameAwayTeam": "",
+            "gameDate": "",
+            "gameScore": "",
+            "annotations": []
+                }
+           with open(annotation_path, 'w') as f:
+            json.dump(original_data, f)  # Initialize with an empty list
+           with open(annotation_path, 'r') as f:
+             annotations = json.load(f)
+         #print(f"Created empty annotation file: {annotation_path}")
+    add_seconds_to_events(annotation_path)   
+          
 
     print("Annotations loaded:", annotations)  # Debugging
 
@@ -51,12 +70,6 @@ def upload_video():
         'duration': duration,
         'annotations': annotations  # Include annotations in the response
     })
-import json
-import re
-
-import json
-import re
-from collections import OrderedDict
 
 def add_seconds_to_events(file_path):
     def convert_game_time_to_seconds(game_time):
