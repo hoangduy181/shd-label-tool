@@ -230,8 +230,14 @@ $(document).ready(function () {
     });
 
     // Keyboard shortcuts
+    videoPlayer.addEventListener('click', function (e) {
+        console.log('Video player clicked!'); // Debugging
+        videoPlayer.blur();
+        // Add your custom logic here
+    });
     $(document).on('keydown', function (e) {
         if (isSeeking) return;
+        e.preventDefault();
 
         switch (e.key) {
             case ' ':
@@ -239,6 +245,7 @@ $(document).ready(function () {
                 if (document.activeElement !== videoPlayer) {
                     videoPlayer.focus();
                     videoPlayer.paused ? videoPlayer.play() : videoPlayer.pause();
+                    videoPlayer.blur();
                 }
                 break;
             case 'Enter':
@@ -254,38 +261,22 @@ $(document).ready(function () {
                 $('#volumeControl').val(videoPlayer.volume);
                 break;
             case 'ArrowRight':
-                e.preventDefault();
-                console.log('ArrowRight');
-                
-                if (document.activeElement !== videoPlayer) {
-                    videoPlayer.focus();
-                }
-                isSeeking = true;
-                videoPlayer.currentTime = Math.min(videoPlayer.currentTime -50 , videoPlayer.duration);
-                if (videoPlayer.duration-videoPlayer.currentTime <=60){
-                    videoPlayer.currentTime = Math.max(currentVideoTime +10, 0);
-                }
-                setTimeout(() => {
-                    isSeeking = false;
-                }, 200);
-                break;
+                if (document.activeElement === videoPlayer) {
+                    videoPlayer.blur();}
+                    e.preventDefault(); // Prevent default behavior
+                    console.log('ArrowRight');
+                    // Seek forward by 5 seconds
+                    videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 5, videoPlayer.duration);
+                    break;
+        
             case 'ArrowLeft':
-                e.preventDefault();
-                isSeeking = true;
-                if (document.activeElement !== videoPlayer) {
-                    videoPlayer.focus();
-                }
-                if (videoPlayer.currentTime <=60){
-                    ti=videoPlayer.currentTime
-                    videoPlayer.currentTime = Math.max(currentVideoTime -10, 0);
-                }
-                else {
-                videoPlayer.currentTime = Math.max(videoPlayer.currentTime +50, 0);}
-
-                setTimeout(() => {
-                    isSeeking = false;
-                }, 200);
-                break;
+                if (document.activeElement === videoPlayer) {
+                    videoPlayer.blur();}
+                    e.preventDefault(); // Prevent default behavior
+                    console.log('ArrowLeft');
+                    // Seek backward by 5 seconds
+                    videoPlayer.currentTime = Math.max(videoPlayer.currentTime - 5, 0);
+                    break;
         }
     });
     let currentVideoTime = 0; // Global variable to store the current time of the video

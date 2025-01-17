@@ -7,44 +7,12 @@
     "gameScore": "2 - 3",
     "annotations": [
         {
-            "seconds": 0,
-            "label": "Kickoff",
-            "position": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "1 - 00:00.000"
-        },
-        {
-            "seconds": 1,
-            "label": "Kickoff",
-            "position": null,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "1 - 00:01.000"
-        },
-        {
-            "gameTime": "1 - 02:41.360",
-            "label": "Kickoff",
-            "position": null,
-            "seconds": 161.36,
-            "team": "home",
-            "visibility": "visible"
-        },
-        {
             "gameTime": "1 - 02:41.360",
             "label": "Goal",
             "position": 0,
             "seconds": 161.36,
             "team": "not_applicable",
             "visibility": "hidden"
-        },
-        {
-            "gameTime": "1 - 03:16.010",
-            "label": "Kickoff",
-            "position": 0,
-            "seconds": 196.01,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
         },
         {
             "gameTime": "1 - 03:48.160",
@@ -623,12 +591,12 @@
             "visibility": "visible"
         },
         {
-            "gameTime": "2 - 45:02.360",
-            "label": "Corner",
-            "position": "75000",
             "seconds": 2702.36,
+            "label": "Substitute",
+            "position": null,
             "team": "away",
-            "visibility": "visible"
+            "visibility": "visible",
+            "gameTime": "2 - 45:02.360"
         },
         {
             "gameTime": "2 - 46:08.560",
@@ -887,44 +855,12 @@
             "visibility": "visible"
         },
         {
-            "gameTime": "2 - 59:56.470",
-            "label": "Kickoff",
-            "position": 0,
-            "seconds": 3596.47,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
-        },
-        {
             "gameTime": "2 - 60:01.350",
             "label": "Save",
             "position": 0,
             "seconds": 3601.35,
             "team": "not_applicable",
             "visibility": "not_applicable"
-        },
-        {
-            "seconds": 3700,
-            "label": "Kickoff",
-            "position": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "2 - 61:40.000"
-        },
-        {
-            "seconds": 5882.56,
-            "label": "Kickoff",
-            "position": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "2 - 98:02.560"
-        },
-        {
-            "seconds": 6857.98,
-            "label": "Kickoff",
-            "position": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "2 - 114:17.980"
         }
     ]
 }
