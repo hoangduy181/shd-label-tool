@@ -106,11 +106,6 @@ python app.py
 - Use the "Add Event" button to open the annotation modal
 - Fill in the event details (e.g., time, label, team, visibility) and save the annotation
 
-### View Annotations
-- Annotations are displayed as markers on the video seek bar
-- Hover over a marker to see the event label
-- Click a marker to seek to the corresponding time in the video
-
 ### Save Annotations
 - Click the "Save Annotations" button to save the annotations to a JSON file
 
