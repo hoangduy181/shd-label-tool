@@ -1,128 +1,118 @@
-Football Video Annotation Tool
-Show Image
+# Football Video Annotation Tool
+![Website Screenshot](websiteimage.JPG)
+
 This repository contains a web-based tool for annotating football (soccer) videos. The tool allows users to upload videos, add annotations for specific events (e.g., goals, fouls, penalties), and save these annotations for later use. The annotations are displayed as markers on the video seek bar, similar to YouTube's chapter markers.
-This application is intended to be used with SoccerNet annotations to ease the process of event annotations. For more information, visit SoccerNet.
-Demo
-demo.webm
-Features
 
-Video Upload: Upload football videos in common formats (e.g., MP4, AVI).
-Annotation Management:
+This application is intended to be used with SoccerNet annotations to ease the process of event annotations. For more information, visit [SoccerNet](https://github.com/SoccerNet).
 
-Add annotations for specific events (e.g., goals, fouls, penalties)
-Edit or delete existing annotations
-Filter annotations by event type
+## Demo
 
+[demo.webm](https://github.com/user-attachments/assets/6e7c220a-fda1-45c5-8002-b4599f09f846)
 
-Save and Load Annotations: Save annotations to a JSON file and load them when reopening the video
+## Features
 
-Technologies Used
+- **Video Upload**: Upload football videos in common formats (e.g., MP4, AVI).
+- **Annotation Management**:
+  - Add annotations for specific events (e.g., goals, fouls, penalties)
+  - Edit or delete existing annotations
+  - Filter annotations by event type
+- **Save and Load Annotations**: Save annotations to a JSON file and load them when reopening the video
 
-Frontend:
+## Technologies Used
 
-HTML, CSS, JavaScript
-Bootstrap for styling
-jQuery for DOM manipulation and AJAX requests
+- **Frontend**:
+  - HTML, CSS, JavaScript
+  - [Bootstrap](https://getbootstrap.com/) for styling
+  - [jQuery](https://jquery.com/) for DOM manipulation and AJAX requests
+- **Backend**:
+  - [Flask](https://flask.palletsprojects.com/) (Python) for handling file uploads and serving annotations
+- **Video Processing**:
+  - [OpenCV](https://opencv.org/) for extracting video metadata (e.g., duration)
 
+## Installation
 
-Backend:
+### Prerequisites
 
-Flask (Python) for handling file uploads and serving annotations
+- Python 3.x
 
+### Steps
 
-Video Processing:
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/ibrahimabdelaal/Soccer-event-annotation-tool.git
+   cd football-video-annotation-tool
+   ```
 
-OpenCV for extracting video metadata (e.g., duration)
+2. **Install Dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
+3. **Prepare Your Files**:
+   
+   #### File Organization
+   - Place your video files in the `uploads` folder
+   - Store annotation files in the `annotations` folder
 
+   #### Annotation Formats
+   The tool supports two annotation formats:
 
-Installation
-Prerequisites
+   1. **Basic Format (Legacy)**
+      - Create a JSON file with the same name as your video
+      - Example: For `match1.mp4`, create `match1.json` in the annotations folder
+      - Reference: See `old_structure.json` for format details
 
-Python 3.x
+   2. **Standard Soccer Net Format**
+      - Uses the OpenSportsLab standard format
+      - Place your annotations in `standard.json` in the annotations folder
+      - The tool automatically:
+        - Detects if `standard.json` exists
+        - Finds annotations matching your video filename
+      - Compatible with [OSL-ActionSpotting](https://github.com/OpenSportsLab/OSL-ActionSpotting)
+      - Reference: See `standard.json` for format details
 
-Steps
+   ⚠️ **Important Note**: 
+   - If `standard.json` exists in the annotations folder, the tool will **always** use it, even if you have corresponding files in the basic format
+   - To use the basic format, ensure `standard.json` is removed from the annotations folder
 
-Clone the Repository:
-bashCopygit clone https://github.com/ibrahimabdelaal/Soccer-event-annotation-tool.git
-cd football-video-annotation-tool
+   #### Project Structure Example
+   ```
+   project/
+   ├── uploads/
+   │   ├── match1.mp4
+   │   └── match2.mp4
+   └── annotations/
+       ├── match1.json     (Basic format)
+       ├── match2.json     (Basic format)
+       └── standard.json   (Soccer Net format)
+   ```
 
-Install Dependencies:
-bashCopypip install -r requirements.txt
+## Running the Application
 
-Prepare Your Files:
-File Organization
+To start the application, run the `app.py` file:
+```bash
+python app.py
+```
 
-Place your video files in the uploads folder
-Store annotation files in the annotations folder
+## Usage
 
-Annotation Formats
-The tool supports two annotation formats:
+### Upload a Video
+- Click the "Choose File" button to upload a video
+- Once uploaded, the video will be displayed in the player
+- Make sure that the corresponding annotation file is located in annotations folder with the same name as your video
+- See the structure of the JSON annotation file the app works with (example can be found in `annotations_output.json`)
 
-Basic Format (Legacy)
+### Add Annotations
+- Use the "Add Event" button to open the annotation modal
+- Fill in the event details (e.g., time, label, team, visibility) and save the annotation
 
-Create a JSON file with the same name as your video
-Example: For match1.mp4, create match1.json in the annotations folder
-Reference: See old_structure.json for format details
+### View Annotations
+- Annotations are displayed as markers on the video seek bar
+- Hover over a marker to see the event label
+- Click a marker to seek to the corresponding time in the video
 
+### Save Annotations
+- Click the "Save Annotations" button to save the annotations to a JSON file
 
-Standard Soccer Net Format
-
-Uses the OpenSportsLab standard format
-Place your annotations in standard.json in the annotations folder
-The tool automatically:
-
-Detects if standard.json exists
-Finds annotations matching your video filename
-
-
-Compatible with OSL-ActionSpotting
-Reference: See standard.json for format details
-
-
-
-⚠️ Important Note:
-
-If standard.json exists in the annotations folder, the tool will always use it, even if you have corresponding files in the basic format
-To use the basic format, ensure standard.json is removed from the annotations folder
-
-Project Structure Example
-Copyproject/
-├── uploads/
-│   ├── match1.mp4
-│   └── match2.mp4
-└── annotations/
-    ├── match1.json     (Basic format)
-    ├── match2.json     (Basic format)
-    └── standard.json   (Soccer Net format)
-
-
-Running the Application
-To start the application, run the app.py file:
-bashCopypython app.py
-Usage
-Upload a Video
-
-Click the "Choose File" button to upload a video
-Once uploaded, the video will be displayed in the player
-Make sure that the corresponding annotation file is located in annotations folder with the same name as your video
-See the structure of the JSON annotation file the app works with (example can be found in annotations_output.json)
-
-Add Annotations
-
-Use the "Add Event" button to open the annotation modal
-Fill in the event details (e.g., time, label, team, visibility) and save the annotation
-
-View Annotations
-
-Annotations are displayed as markers on the video seek bar
-Hover over a marker to see the event label
-Click a marker to seek to the corresponding time in the video
-
-Save Annotations
-
-Click the "Save Annotations" button to save the annotations to a JSON file
-
-Load Annotations
-
-When reopening a video, annotations will be loaded automatically if a corresponding JSON file exists
+### Load Annotations
+- When reopening a video, annotations will be loaded automatically if a corresponding JSON file exists
