@@ -1,10 +1,4 @@
 {
-    "UrlLocal": "spain_laliga/2016-2017/2017-04-23 - 21-45 Real Madrid 2 - 3 Barcelona/",
-    "UrlYoutube": "",
-    "gameHomeTeam": "Real Madrid",
-    "gameAwayTeam": "Barcelona",
-    "gameDate": "23/04/2017 - 21:45",
-    "gameScore": "2 - 3",
     "annotations": [
         {
             "gameTime": "1 - 02:41.360",
@@ -13,14 +7,6 @@
             "seconds": 161.36,
             "team": "not_applicable",
             "visibility": "hidden"
-        },
-        {
-            "gameTime": "1 - 03:48.160",
-            "label": "Shot",
-            "position": "1000",
-            "seconds": 228.16,
-            "team": "away",
-            "visibility": "visible"
         },
         {
             "gameTime": "1 - 03:48.160",
@@ -111,17 +97,16 @@
             "visibility": "visible"
         },
         {
-            "gameTime": "1 - 11:36.160",
-            "label": "Penalty",
-            "position": "15000",
-            "seconds": 696.16,
+            "seconds": 692,
+            "label": "Shot",
             "team": "away",
-            "visibility": "visible"
+            "visibility": "visible",
+            "gameTime": "1 - 11:32.000"
         },
         {
             "gameTime": "1 - 11:36.160",
-            "label": "Shot",
-            "position": "16000",
+            "label": "Penalty",
+            "position": "15000",
             "seconds": 696.16,
             "team": "away",
             "visibility": "visible"
@@ -181,6 +166,14 @@
             "seconds": 764.48,
             "team": "away",
             "visibility": "visible"
+        },
+        {
+            "gameTime": "1 - 13:22.360",
+            "label": "Kickoff",
+            "position": 0,
+            "seconds": 802.36,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
         },
         {
             "gameTime": "1 - 13:26.400",
@@ -591,12 +584,12 @@
             "visibility": "visible"
         },
         {
-            "seconds": 2702.36,
+            "gameTime": "2 - 45:02.360",
             "label": "Substitute",
             "position": null,
+            "seconds": 2702.36,
             "team": "away",
-            "visibility": "visible",
-            "gameTime": "2 - 45:02.360"
+            "visibility": "visible"
         },
         {
             "gameTime": "2 - 46:08.560",

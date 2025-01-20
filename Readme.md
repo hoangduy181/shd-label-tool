@@ -19,7 +19,7 @@ This application is intended to be used with SoccerNet annotations to ease the p
   - Add annotations for specific events (e.g., goals, fouls, penalties).
   - Edit or delete existing annotations.
   - Filter annotations by event type.
-- **Seek Bar Markers**: Annotations are displayed as markers on the video seek bar for easy navigation.
+
 - **Save and Load Annotations**: Save annotations to a JSON file and load them when reopening the video.
 
 ## Technologies Used
@@ -53,11 +53,49 @@ This application is intended to be used with SoccerNet annotations to ease the p
      pip install -r requirements.txt
      ```
 
-3. **Prepare Your Files**:
-   - Ensure your video file is placed in the `uploads` folder.
-   - Make sure the corresponding annotation file is in the `annotations` folder with the same name as your video.
-   - For reference, see the `annotations_output.json` format.
+I'll help you write this in a clearer way for your README.md file:
+Yes, let me revise that section to include this important note:
 
+### 3. Prepare Your Files
+
+#### File Organization
+- Place your video files in the `uploads` folder
+- Store annotation files in the `annotations` folder
+
+#### Annotation Formats
+The tool supports two annotation formats:
+
+1. **Basic Format (Legacy)**
+   - Create a JSON file with the same name as your video
+   - Example: For `match1.mp4`, create `match1.json` in the annotations folder
+   - Reference: See `old_structure.json` for format details
+
+2. **Standard Soccer Net Format**
+   - Uses the OpenSportsLab standard format
+   - Place your annotations in `standard.json` in the annotations folder
+   - The tool automatically:
+     - Detects if `standard.json` exists
+     - Finds annotations matching your video filename
+   - Compatible with [OSL-ActionSpotting](https://github.com/OpenSportsLab/OSL-ActionSpotting)
+   - Reference: See `standard.json` for format details
+
+⚠️ **Important Note**: 
+- If `standard.json` exists in the annotations folder, the tool will **always** use it, even if you have corresponding files in the basic format
+- To use the basic format, ensure `standard.json` is removed from the annotations folder
+
+Examples:
+```
+project/
+├── uploads/
+│   ├── match1.mp4
+│   └── match2.mp4
+└── annotations/
+    ├── match1.json     (Basic format)
+    ├── match2.json     (Basic format)
+    └── standard.json   (Soccer Net format)
+```
+
+The tool will automatically detect and use the appropriate format when you load your video.
 ### Running the Application
 
 - To start the application, run the `app.py` file:

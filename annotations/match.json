@@ -7,6 +7,62 @@
     "gameScore": "2 - 3",
     "annotations": [
         {
+            "gameTime": "1 - 00:00.000",
+            "label": "Red card",
+            "position": 0,
+            "seconds": 0,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 00:00.000",
+            "label": "Foul",
+            "position": 0,
+            "seconds": 0,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 00:00.700",
+            "label": "Foul",
+            "position": 1,
+            "seconds": 0.7,
+            "team": "home",
+            "visibility": "visible"
+        },
+        {
+            "gameTime": "1 - 00:10.000",
+            "label": "Red card",
+            "position": 0,
+            "seconds": 10,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 00:19.850",
+            "label": "Challenge",
+            "position": null,
+            "seconds": 19.85,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 20:00.000",
+            "label": "Corner",
+            "position": 0,
+            "seconds": 1200,
+            "team": "not_applicable",
+            "visibility": "not_applicable"
+        },
+        {
+            "gameTime": "1 - 38:55.280",
+            "label": "Penalty",
+            "position": null,
+            "seconds": 2335.28,
+            "team": "away",
+            "visibility": "visible"
+        },
+        {
             "gameTime": "2 - 49:10.680",
             "label": "Red card",
             "position": null,
@@ -21,14 +77,6 @@
             "seconds": 2976.32,
             "team": "home",
             "visibility": "visible"
-        },
-        {
-            "seconds": 2335.28,
-            "label": "Penalty",
-            "position": null,
-            "team": "away",
-            "visibility": "visible",
-            "gameTime": "1 - 38:55.280"
         },
         {
             "gameTime": "2 - 49:45.280",
@@ -821,70 +869,6 @@
             "seconds": 6248.64,
             "team": "away",
             "visibility": "visible"
-        },
-        {
-            "gameTime": "1 - 00:19.850",
-            "label": "Challenge",
-            "position": null,
-            "seconds": 19.85,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
-        },
-        {
-            "gameTime": "1 - 00:00.700",
-            "label": "Foul",
-            "position": 1,
-            "seconds": 0.7,
-            "team": "home",
-            "visibility": "visible"
-        },
-        {
-            "gameTime": "1 - 20:00.000",
-            "label": "Corner",
-            "position": 0,
-            "seconds": 1200,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
-        },
-        {
-            "gameTime": "1 - 00:00.000",
-            "label": "Kickoff",
-            "position": 0,
-            "seconds": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
-        },
-        {
-            "gameTime": "1 - 00:00.010",
-            "label": "Kickoff",
-            "position": 0,
-            "seconds": 0.01,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
-        },
-        {
-            "gameTime": "1 - 00:10.000",
-            "label": "Kickoff",
-            "position": 0,
-            "seconds": 10,
-            "team": "not_applicable",
-            "visibility": "not_applicable"
-        },
-        {
-            "seconds": 0,
-            "label": "Red card",
-            "position": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "1 - 00:00.000"
-        },
-        {
-            "seconds": 10,
-            "label": "Red card",
-            "position": 0,
-            "team": "not_applicable",
-            "visibility": "not_applicable",
-            "gameTime": "1 - 00:10.000"
         }
     ]
 }
