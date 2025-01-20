@@ -1,7 +1,7 @@
 # Football Video Annotation Tool
 ![Website Screenshot](websiteimage.JPG)
 
-This repository contains a web-based tool for annotating football (soccer) videos. The tool allows users to upload videos, add annotations for specific events (e.g., goals, fouls, penalties), and save these annotations for later use. The annotations are displayed as markers on the video seek bar, similar to YouTube's chapter markers.
+This repository contains a web-based tool for annotating football (soccer) videos. The tool allows users to upload videos, add annotations for specific events (e.g., goals, fouls, penalties), and save these annotations for later use. 
 
 This application is intended to be used with SoccerNet annotations to ease the process of event annotations. For more information, visit [SoccerNet](https://github.com/SoccerNet).
 
