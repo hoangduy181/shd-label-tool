@@ -106,7 +106,7 @@ def add_seconds_to_events(file_path,filename):
         if not match:
             return None  # Return None if the format is invalid
         half, minutes, seconds = map(int, match.groups())
-        total_seconds = (half - 1) * 45 * 60 + minutes * 60 + seconds   # Assuming 45 minutes per half
+        total_seconds = 0 + minutes * 60 + seconds   # Assuming 45 minutes per half  (half - 1) * 45 * 60
         return total_seconds
 
     # Read the JSON file
