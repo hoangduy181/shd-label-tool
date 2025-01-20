@@ -53,9 +53,6 @@ This application is intended to be used with SoccerNet annotations to ease the p
      pip install -r requirements.txt
      ```
 
-I'll help you write this in a clearer way for your README.md file:
-Yes, let me revise that section to include this important note:
-
 ### 3. Prepare Your Files
 
 #### File Organization
