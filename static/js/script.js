@@ -210,8 +210,10 @@ $(document).ready(function () {
     function updateEventList() {
         const filter = $('#eventFilter').val();
         const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
-        console.log(filteredAnnotations);
-        
+
+        // Sort annotations by time (seconds)
+        filteredAnnotations.sort((a, b) => a.seconds - b.seconds);
+
         $('#eventList').empty();
         filteredAnnotations.forEach((event, index) => {
             if (typeof event.seconds === 'number' && !isNaN(event.seconds)) {
