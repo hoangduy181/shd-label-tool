@@ -102,11 +102,22 @@ def determine_format(data):
 def add_seconds_to_events(file_path,filename):
     def convert_game_time_to_seconds(game_time):
         """Convert a game time string to total seconds."""
-        match = re.match(r"(\d+) - (\d+):(\d+)", game_time)
-        if not match:
-            return None  # Return None if the format is invalid
-        half, minutes, seconds = map(int, match.groups())
-        total_seconds = 0 + minutes * 60 + seconds   # Assuming 45 minutes per half  (half - 1) * 45 * 60
+       
+        match2=re.match(r"(\d+) - (\d{2}):(\d{2}):(\d{2})", game_time)
+        if match2:
+                print("match2",match2)
+                half,hour, minutes, seconds = map(int, match2.groups())
+                total_seconds = hour*60*60 + minutes * 60 + seconds   # Assuming 45 minutes per half  (half - 1) * 45 * 60
+        else :
+                match = re.match(r"(\d+) - (\d+):(\d+)", game_time)
+                if not match and not match2:
+                    return None  # Return None if the format is invalid
+                if match:
+                    half, minutes, seconds = map(int, match.groups())
+                    total_seconds = 0 + minutes * 60 + seconds   # Assuming 45 minutes per half  (half - 1) * 45 * 60
+
+
+
         return total_seconds
 
     # Read the JSON file
