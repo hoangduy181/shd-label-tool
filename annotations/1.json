@@ -1,0 +1,17 @@
+{
+    "UrlLocal": "",
+    "UrlYoutube": "",
+    "gameHomeTeam": "",
+    "gameAwayTeam": "",
+    "gameDate": "",
+    "gameScore": "",
+    "annotations": [
+        {
+            "seconds": 158.66,
+            "label": "Penalty",
+            "team": "not_applicable",
+            "visibility": "not_applicable",
+            "gameTime": "1 - 02:38.660"
+        }
+    ]
+}

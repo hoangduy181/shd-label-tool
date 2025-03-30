@@ -1,0 +1,17 @@
+{
+    "UrlLocal": "",
+    "UrlYoutube": "",
+    "gameHomeTeam": "",
+    "gameAwayTeam": "",
+    "gameDate": "",
+    "gameScore": "",
+    "annotations": [
+        {
+            "seconds": 440.13,
+            "label": "Goal",
+            "team": "not_applicable",
+            "visibility": "not_applicable",
+            "gameTime": "1 - 07:20.130"
+        }
+    ]
+}

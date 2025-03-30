@@ -1,7 +1,7 @@
 import json
 
 # Path to the JSON file
-json_file_path = "annotations\\fullmatch.json"  # Replace with your file path
+json_file_path = "annotations/fullmatch.json"  # Replace with your file path
 
 # Path to the output TXT file
 output_txt_path = "labels.txt"  # Replace with your desired output file path
