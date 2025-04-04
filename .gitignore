@@ -1,2 +1,5 @@
 # ./uploads/*
-./upload_files/*
+# ./upload_files/*
+
+uploads/*
+upload_files/*
