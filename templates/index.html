@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +14,7 @@
         .container-fluid {
             padding: 1rem;
         }
+
         .action-btn {
             font-size: 0.9rem;
             padding: 0.3rem 0.5rem;
@@ -21,38 +23,224 @@
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 200px;
-            color: white;
+            transition: all 0.3s ease;
         }
-        .action-btn[data-action="Shots off target"],
-        .action-btn[data-action="Kick-off"],
-        .action-btn[data-action="Yellow card"],
-        .action-btn[data-action="Goal"] {
-            color: black;
+
+        /* Color utility classes */
+        .text-light-hover:hover {
+            color: white !important;
         }
+
+        .text-dark-hover:hover {
+            color: black !important;
+        }
+
         .event-item {
             border-left: 4px solid transparent;
         }
-        .action-btn[data-action="Ball out of play"] { background-color: #FF5733; color: white; }
-        .action-btn[data-action="Throw-in"] { background-color: #33FF57; color: white; }
-        .action-btn[data-action="Foul"] { background-color: #3357FF; color: white; }
-        .action-btn[data-action="Indirect free-kick"] { background-color: #FF33A1; color: white; }
-        .action-btn[data-action="Clearance"] { background-color: #A133FF; color: white; }
-        .action-btn[data-action="Shots on target"] { background-color: #33FFF5; color: white; }
-        .action-btn[data-action="Corner"] { background-color: #FF8C33; color: white; }
-        .action-btn[data-action="Substitution"] { background-color: #8C33FF; color: white; }
-        .action-btn[data-action="Direct free-kick"] { background-color: #FF5733; color: white; }
-        .action-btn[data-action="Offside"] { background-color: #FF3333; color: white; }
-        .action-btn[data-action="Yellow->red card"] { background-color: #FF9933; color: white; }
+
+        /* Button colors with dynamic text colors */
+        .action-btn[data-action="Ball out of play"] {
+            background-color: #FF5733;
+        }
+
+        .action-btn[data-action="Throw-in"] {
+            background-color: #33FF57;
+        }
+
+        .action-btn[data-action="Foul"] {
+            background-color: #3357FF;
+        }
+
+        .action-btn[data-action="Indirect free-kick"] {
+            background-color: #FF33A1;
+        }
+
+        .action-btn[data-action="Clearance"] {
+            background-color: #A133FF;
+        }
+
+        .action-btn[data-action="Shots on target"] {
+            background-color: #33FFF5;
+        }
+
+        .action-btn[data-action="Corner"] {
+            background-color: #FF8C33;
+        }
+
+        .action-btn[data-action="Substitution"] {
+            background-color: #8C33FF;
+        }
+
+        .action-btn[data-action="Direct free-kick"] {
+            background-color: #FF5733;
+        }
+
+        .action-btn[data-action="Offside"] {
+            background-color: #FF3333;
+        }
+
+        .action-btn[data-action="Yellow->red card"] {
+            background-color: #FF9933;
+        }
+
+        /* Video control button styles with dynamic text colors */
+        #seekBack5s {
+            background-color: #4361ee;
+            border-color: #4361ee;
+        }
+
+        #seekBackFrame {
+            background-color: #3a0ca3;
+            border-color: #3a0ca3;
+        }
+
+        #playPauseBtn {
+            background-color: #4895ef;
+            border-color: #4895ef;
+        }
+
+        #seekForwardFrame {
+            background-color: #3a0ca3;
+            border-color: #3a0ca3;
+        }
+
+        #seekForward5s {
+            background-color: #4361ee;
+            border-color: #4361ee;
+        }
+
+        #seekBack5s:hover {
+            background-color: #3046c9;
+            border-color: #3046c9;
+        }
+
+        #seekBackFrame:hover {
+            background-color: #2d097e;
+            border-color: #2d097e;
+        }
+
+        #playPauseBtn:hover {
+            background-color: #3576c4;
+            border-color: #3576c4;
+        }
+
+        #seekForwardFrame:hover {
+            background-color: #2d097e;
+            border-color: #2d097e;
+        }
+
+        #seekForward5s:hover {
+            background-color: #3046c9;
+            border-color: #3046c9;
+        }
+
+        .video-selection-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+        }
+
+        .video-selection-card .card-header h5 {
+            color: #2c3e50;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .video-selection-card .card-body {
+            padding: 1.5rem;
+            background-color: #ffffff;
+        }
+
+        .video-selection-card .form-label {
+            color: #495057;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .video-selection-card .form-select,
+        .video-selection-card .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        .video-selection-card .form-select:focus,
+        .video-selection-card .form-control:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .video-selection-card #uploadProgress {
+            margin-top: 1rem;
+            height: 0.5rem;
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+
+        .video-selection-card #uploadProgress .progress-bar {
+            background-color: #0d6efd;
+            transition: width 0.2s ease;
+        }
     </style>
+    <script>
+        // Function to determine if a color is light or dark
+        function isLightColor(color) {
+            // Convert hex to RGB
+            let hex = color.replace('#', '');
+            let r = parseInt(hex.substr(0, 2), 16);
+            let g = parseInt(hex.substr(2, 2), 16);
+            let b = parseInt(hex.substr(4, 2), 16);
+
+            // Calculate relative luminance
+            let luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            return luminance > 0.5;
+        }
+
+        // Function to set appropriate text colors
+        function setButtonTextColors() {
+            document.querySelectorAll('.action-btn, #seekBack5s, #seekBackFrame, #playPauseBtn, #seekForwardFrame, #seekForward5s').forEach(button => {
+                let bgColor;
+                if (button.classList.contains('action-btn')) {
+                    bgColor = getComputedStyle(button).backgroundColor;
+                } else {
+                    bgColor = getComputedStyle(button).backgroundColor;
+                }
+
+                // Convert RGB to HEX
+                let rgb = bgColor.match(/\d+/g);
+                let hex = '#' + rgb.map(x => {
+                    const hex = parseInt(x).toString(16);
+                    return hex.length === 1 ? '0' + hex : hex;
+                }).join('');
+
+                if (isLightColor(hex)) {
+                    button.style.color = 'black';
+                    button.classList.add('text-white-hover');
+                    button.classList.remove('text-dark-hover');
+                } else {
+                    button.style.color = 'white';
+                    button.classList.add('text-dark-hover');
+                    button.classList.remove('text-light-hover');
+                }
+            });
+        }
+
+        // Call when DOM is loaded
+        document.addEventListener('DOMContentLoaded', setButtonTextColors);
+    </script>
 </head>
+
 <body>
     <div class="container-fluid">
         <!-- <h1 class="text-center mb-4">Football Event Annotation Tool</h1> -->
         <div class="row">
             <!-- Left Column: Video Uploader and Player -->
-            <div class="col-md-7">
+            <div class="col-md-12" id="videoColumn">
                 <!-- Video Selection Card -->
-                <div class="card mb-3">
+                <h1 id="modalTitle"> Soccer Event Labeling Tool</h1>
+                <div class="card mb-3 video-selection-card">
                     <div class="card-header">
                         <h5 class="mb-0">Video Selection</h5>
                     </div>
@@ -69,7 +257,9 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Or Upload New Video</label>
-                                    <input type="file" id="videoUpload" accept="video/*" class="form-control">
+                                    <input type="file" id="videoUpload"
+                                        accept="video/mp4,video/mkv,video/avi,video/quicktime,video/x-msvideo,video/x-matroska,video/*"
+                                        class="form-control">
                                 </div>
                             </div>
                         </div>
@@ -80,7 +270,7 @@
                 </div>
 
                 <!-- Video Player -->
-                <div class="card mb-3">
+                <div class="card mb-3 video-container-card" id="videoContainerCard">
                     <div class="card-body">
                         <div id="videoContainer">
                             <video id="videoPlayer" class="w-100" style="pointer-events: none;" preload="auto"></video>
@@ -91,13 +281,13 @@
                                             <i class="bi bi-skip-backward-fill"></i> 5s
                                         </button>
                                         <button id="seekBackFrame" class="btn btn-outline-primary">
-                                            <i class="bi bi-skip-backward"></i> 1f
+                                            <i class="bi skip-backward"></i> 1 frame
                                         </button>
                                         <button id="playPauseBtn" class="btn btn-primary">
                                             <i class="bi bi-play-fill"></i>
                                         </button>
                                         <button id="seekForwardFrame" class="btn btn-outline-primary">
-                                            <i class="bi bi-skip-forward"></i> 1f
+                                            <i class="bi skip-forward"></i> 1 frame
                                         </button>
                                         <button id="seekForward5s" class="btn btn-outline-primary">
                                             <i class="bi bi-skip-forward-fill"></i> 5s
@@ -124,9 +314,15 @@
                                     <option value="1" selected>1x</option>
                                     <option value="1.5">1.5x</option>
                                     <option value="2">2x</option>
+                                    <option value="4">4x</option>
+                                    <option value="8">8x</option>
                                 </select>
                                 <label for="volumeControl" class="form-label d-inline ms-2">Volume</label>
-                                <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1" style="width: 100px;">
+                                <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1"
+                                    style="width: 100px;">
+                            </div>
+                            <div class="btn btn-outline-primary float-end disabled">
+                                <span id="metadataCurrentFrame">-</span>
                             </div>
                         </div>
                     </div>
@@ -136,7 +332,7 @@
             <!-- Middle Column: Video Metadata and Event Filter -->
             <div class="col-md-3">
                 <!-- Video Metadata Card -->
-                <div class="card mb-3">
+                <div class="card mb-3 video-metadata-card" id="metadataCard">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Video Metadata: <span id="videoFileName">-</span></h5>
                         <div id="metadataLoading" class="spinner-border spinner-border-sm d-none" role="status">
@@ -153,27 +349,26 @@
                                 <div class="mb-2">
                                     <strong>Frame Rate:</strong> <span id="metadataFps">-</span> fps
                                 </div>
-                                <div class="mb-2">
-                                    <strong>Total Frames:</strong> <span id="metadataFrameCount">-</span>
-                                </div>
                             </div>
                             <div class="col-6">
                                 <div class="mb-2">
+                                    <strong>Total Frames:</strong> <span id="metadataFrameCount">-</span>
+                                </div>
+                                <div class="mb-2">
                                     <strong>Resolution:</strong> <span id="metadataResolution">-</span>
                                 </div>
-                                <div class="mb-2">
-                                    <strong>Current Frame:</strong> <span id="metadataCurrentFrame">-</span>
-                                </div>
-                                <div class="mb-2">
-                                    <strong>Current Time:</strong> <span id="metadataCurrentTime">-</span>
-                                </div>
                             </div>
+                        </div>
+                        <div class="mt-2">
+                            <button id="editMatchInfoBtn" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Edit Match Info
+                            </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Events List Card -->
-                <div class="card">
+                <div class="card video-event-list-card" id="eventListCard">
                     <div class="card-header">
                         <h5 class="mb-0">Events</h5>
                     </div>
@@ -191,7 +386,7 @@
 
             <!-- Right Column: Event Shortcuts -->
             <div class="col-md-2">
-                <div class="card">
+                <div class="card video-event-shortcuts-card ">
                     <div class="card-header">
                         <h5 class="mb-0">Event Shortcuts</h5>
                     </div>
@@ -200,7 +395,8 @@
                             <button class="btn action-btn" data-action="ball_out_of_play">Ball out of play (0)</button>
                             <button class="btn action-btn" data-action="throw_in">Throw-in (1)</button>
                             <button class="btn action-btn" data-action="foul">Foul (2)</button>
-                            <button class="btn action-btn" data-action="indirect_free_kick">Indirect free-kick (3)</button>
+                            <button class="btn action-btn" data-action="indirect_free_kick">Indirect free-kick
+                                (3)</button>
                             <button class="btn action-btn" data-action="clearance">Clearance (4)</button>
                             <button class="btn action-btn" data-action="shots_on_target">Shots on target (5)</button>
                             <button class="btn action-btn" data-action="shots_off_target">Shots off target (6)</button>
@@ -231,7 +427,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-7">
+                        <div class="col-md-7" id="videoColumn">
                             <form id="eventForm">
                                 <div class="mb-3">
                                     <label for="labelevent" class="form-label">Event Type</label>
@@ -254,8 +450,9 @@
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="seconds" class="form-label" >Time (s)</label>
-                                    <input type="number" id="seconds" class="form-control form-control-lg" value="0" min="0" step="1" disabled>
+                                    <label for="seconds" class="form-label">Time (s)</label>
+                                    <input type="number" id="seconds" class="form-control form-control-lg" value="0"
+                                        min="0" step="1" disabled>
                                 </div>
                             </form>
                         </div>
@@ -272,7 +469,8 @@
                                     <span class="badge bg-secondary">Enter</span> Save Event
                                 </div>
                                 <div class="mb-2">
-                                    <span class="badge bg-secondary">0-9, D, V, Y, G, P, R, X</span> Event Type Selection
+                                    <span class="badge bg-secondary">0-9, D, V, Y, G, P, R, X</span> Event Type
+                                    Selection
                                 </div>
                             </div>
                         </div>
@@ -286,8 +484,49 @@
         </div>
     </div>
 
+    <!-- Match Info Modal -->
+    <div class="modal fade" id="matchInfoModal" tabindex="-1" aria-labelledby="matchInfoModalLabel" data-bs-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="matchInfoModalLabel">Match Information</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="matchInfoForm">
+                        <div class="mb-3">
+                            <label for="urlLocal" class="form-label">Video Path</label>
+                            <input type="text" class="form-control" id="urlLocal" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gameHomeTeam" class="form-label">Home Team</label>
+                            <input type="text" class="form-control" id="gameHomeTeam" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gameAwayTeam" class="form-label">Away Team</label>
+                            <input type="text" class="form-control" id="gameAwayTeam" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="gameDate" class="form-label">Match Date</label>
+                            <input type="date" class="form-control" id="gameDate">
+                        </div>
+                        <div class="mb-3">
+                            <label for="gameScore" class="form-label">Score (e.g., 2-1)</label>
+                            <input type="text" class="form-control" id="gameScore" pattern="\d+-\d+" placeholder="0-0">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="saveMatchInfoBtn">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
+
 </html>

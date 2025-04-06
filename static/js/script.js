@@ -11,6 +11,17 @@ $(document).ready(function () {
     let frameRate = 30; // Default frame rate, will be updated when video loads
     let modalOpened = false; // Track if modal is currently open
     let videoFileName = null;
+    let hasUnsavedChanges = false; // Track if there are unsaved changes
+    let originalAnnotations = []; // Store original annotations for comparison
+    let baseSeekTime = 5; // Base seeking time in seconds
+    let currentSeekTime = baseSeekTime; // Current seeking time, will be adjusted based on playback rate
+    let matchInfo = {
+        urlLocal: '',
+        gameHomeTeam: '',
+        gameAwayTeam: '',
+        gameDate: '',
+        gameScore: ''
+    }; // Store match information
     // Define event labels for old and new formats
     const eventLabels = {
         // old: [
@@ -124,23 +135,23 @@ $(document).ready(function () {
     // Function to get color for an event type
     function getEventColor(label) {
         const colors = {
-            'ball_out_of_play': '#9ACBD0',
-            'throw_in': '#FF9A9A',
-            'foul': '#E69DB8',
-            'indirect_free_kick': '#E9A5F1',
-            'clearance': '#A08963',
-            'shots_on_target': '#DDEB9D',
-            'shots_off_target': '#BF3131',
-            'corner': '#4D55CC',
-            'substitution': '#3D3D3D',
-            'kick_off': '#A9B5DF',
-            'direct_free_kick': '#27445D',
-            'offside': '#780C28',
-            'yellow_card': '#F0A04B',
-            'goal': '#C5BAFF',
-            'penalty': '#6A80B9',
-            'red_card': '#A31D1D',
-            'yellow_red_card': '#5E686D'
+            'ball_out_of_play': '#4A90E2', // Bright blue
+            'throw_in': '#E74C3C',     // Strong red
+            'foul': '#9B59B6',         // Rich purple
+            'indirect_free_kick': '#8E44AD', // Deep purple
+            'clearance': '#795548',    // Rich brown
+            'shots_on_target': '#27AE60', // Deep green
+            'shots_off_target': '#C0392B', // Dark red
+            'corner': '#2980B9',       // Deep blue
+            'substitution': '#2C3E50', // Dark slate
+            'kick_off': '#1ABC9C',     // Turquoise
+            'direct_free_kick': '#16A085', // Dark turquoise
+            'offside': '#D35400',      // Dark orange
+            'yellow_card': '#F1C40F',  // Bright yellow
+            'goal': '#8E44AD',         // Purple
+            'penalty': '#2980B9',      // Deep blue
+            'red_card': '#C0392B',     // Dark red
+            'yellow_red_card': '#E67E22' // Dark orange
         };
         return colors[label] || '#000000';
     }
@@ -246,6 +257,18 @@ $(document).ready(function () {
         $('#playPauseBtn').html('<i class="bi bi-play-fill"></i>');
     }
 
+    // Function to update seek time based on playback rate
+    function updateSeekTime(playbackRate) {
+        if (playbackRate <= 2) {
+            currentSeekTime = baseSeekTime;
+        } else {
+            currentSeekTime = baseSeekTime * (playbackRate / 2);
+        }
+        // Update button texts
+        $('#seekBack5s').html(`<i class="bi bi-skip-backward-fill"></i> ${currentSeekTime}s`);
+        $('#seekForward5s').html(`<i class="bi bi-skip-forward-fill"></i> ${currentSeekTime}s`);
+    }
+
     // Function to seek to a specific time
     function seekTo(time) {
         if (modalOpened) return; // Prevent seeking if modal is open
@@ -301,6 +324,7 @@ $(document).ready(function () {
 
             // Update current frame immediately
             currentFrame = newFrame;
+            $('#metadataCurrentFrame').text(`Frame: ${currentFrame}`);
 
             updateMetadataDisplay();
         }
@@ -330,6 +354,9 @@ $(document).ready(function () {
 
     // Update keyboard shortcuts
     $(document).on('keydown', function (e) {
+        // Prevent keyboard shortcuts when any modal is open
+        if (modalOpened || matchInfoModalOpened) return;
+
         // Event label shortcuts
         const shortcuts = {
             '0': 'ball_out_of_play',
@@ -417,9 +444,6 @@ $(document).ready(function () {
         }
         if (isSeeking) return; // Prevent seeking if modal is open
 
-
-
-
         // Check if the pressed key matches any shortcut
         const key = e.key.toLowerCase();
         if (shortcuts[key]) {
@@ -443,7 +467,7 @@ $(document).ready(function () {
                 if (e.shiftKey) {
                     seekByFrames(-1);
                 } else {
-                    seekTo(videoPlayer.currentTime - 5);
+                    seekTo(videoPlayer.currentTime - currentSeekTime);
                 }
                 break;
             case 'ArrowRight':
@@ -451,7 +475,7 @@ $(document).ready(function () {
                 if (e.shiftKey) {
                     seekByFrames(1);
                 } else {
-                    seekTo(videoPlayer.currentTime + 5);
+                    seekTo(videoPlayer.currentTime + currentSeekTime);
                 }
                 break;
             case 'ArrowUp':
@@ -475,11 +499,11 @@ $(document).ready(function () {
     videoPlayer.addEventListener('timeupdate', function () {
         try {
             updateTimeDisplay();
-            // console.log("timeupdate -> currentTime ", videoPlayer.currentTime);
             if (videoMetadata) {
                 const newFrame = getFrameNumberFromTime(videoPlayer.currentTime);
                 if (newFrame !== currentFrame) {
                     currentFrame = newFrame;
+                    $('#metadataCurrentFrame').text(`Frame: ${currentFrame}`);
                     updateMetadataDisplay();
                 }
             }
@@ -514,7 +538,7 @@ $(document).ready(function () {
         if (modalOpened) return; // Prevent seeking if modal is open
         clearTimeout(frameTimeout);
         frameTimeout = setTimeout(() => {
-            seekTo(videoPlayer.currentTime - 5);
+            seekTo(videoPlayer.currentTime - currentSeekTime);
         }, 50);
     });
 
@@ -522,7 +546,7 @@ $(document).ready(function () {
         if (modalOpened) return; // Prevent seeking if modal is open
         clearTimeout(frameTimeout);
         frameTimeout = setTimeout(() => {
-            seekTo(videoPlayer.currentTime + 5);
+            seekTo(videoPlayer.currentTime + currentSeekTime);
         }, 50);
     });
 
@@ -545,31 +569,151 @@ $(document).ready(function () {
         try {
             if (!videoMetadata) return;
 
-
             // Update static metadata
             $('#metadataDuration').text(formatTime(videoMetadata.duration));
             $('#metadataFps').text(videoMetadata.fps.toFixed(2));
             $('#metadataFrameCount').text(videoMetadata.frame_count);
             $('#metadataResolution').text(`${videoMetadata.width}x${videoMetadata.height}`);
+            $('#metadataCurrentFrame').text(`Frame: ${currentFrame}`);
 
-            // Update dynamic metadata
-            if (videoPlayer.currentTime) {
-                $('#metadataCurrentTime').text(formatTime(videoPlayer.currentTime));
-                $('#metadataCurrentFrame').text(currentFrame);
+            // Update match info if available
+            if (videoMetadata.matchInfo) {
+                matchInfo = videoMetadata.matchInfo;
+                updateMatchInfoForm();
             }
         } catch (error) {
             console.error("Error updateMetadataDisplay:", error);
         }
     }
 
-    // Update video source and controls when video is loaded/selected
+    // Function to update match info form
+    function updateMatchInfoForm() {
+        $('#urlLocal').val(matchInfo.urlLocal || videoFileName || '');
+        $('#gameHomeTeam').val(matchInfo.gameHomeTeam || '');
+        $('#gameAwayTeam').val(matchInfo.gameAwayTeam || '');
+        $('#gameDate').val(matchInfo.gameDate || '');
+        $('#gameScore').val(matchInfo.gameScore || '');
+        
+        // Update the modal title with video name if available
+        if (videoFileName) {
+            $('#matchInfoModalLabel').text(`Match Information - ${videoFileName}`);
+        } else {
+            $('#matchInfoModalLabel').text('Match Information');
+        }
+    }
+
+    // Handle edit match info button click
+    $('#editMatchInfoBtn').on('click', function() {
+        if (!videoFile) {
+            alert('Please load a video first');
+            return;
+        }
+        updateMatchInfoForm();
+        $('#matchInfoModal').modal('show');
+    });
+
+    // Track match info modal state
+    let matchInfoModalOpened = false;
+    $('#matchInfoModal').on('show.bs.modal', function () {
+        matchInfoModalOpened = true;
+        // Update the modal title with video name if available
+        if (videoFileName) {
+            $('#matchInfoModalLabel').text(`Match Information - ${videoFileName}`);
+        } else {
+            $('#matchInfoModalLabel').text('Match Information');
+        }
+        
+        // Ensure the modal is properly focused
+        setTimeout(function() {
+            // Focus on the first input field
+            $('#gameHomeTeam').focus();
+            
+            // Ensure the modal is clickable
+            $('#matchInfoModal').css('pointer-events', 'auto');
+            $('.modal-content').css('pointer-events', 'auto');
+        }, 100);
+    });
+
+    $('#matchInfoModal').on('shown.bs.modal', function () {
+        // Additional focus handling after animation completes
+        $('#gameHomeTeam').focus();
+    });
+
+    $('#matchInfoModal').on('hidden.bs.modal', function () {
+        matchInfoModalOpened = false;
+    });
+
+    // Handle save match info button click
+    $('#saveMatchInfoBtn').on('click', function() {
+        const form = document.getElementById('matchInfoForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        matchInfo = {
+            urlLocal: $('#urlLocal').val(),
+            gameHomeTeam: $('#gameHomeTeam').val(),
+            gameAwayTeam: $('#gameAwayTeam').val(),
+            gameDate: $('#gameDate').val(),
+            gameScore: $('#gameScore').val()
+        };
+
+        // Save match info to metadata
+        $.ajax({
+            url: '/save_metadata',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                filename: videoFileName,
+                metadata: {
+                    ...videoMetadata,
+                    matchInfo: matchInfo
+                }
+            }),
+            success: function() {
+                // Update video metadata
+                videoMetadata.matchInfo = matchInfo;
+                
+                // Update annotations with match info
+                const dataToSave = {
+                    filename: videoFileName,
+                    annotations: annotations.map(annotation => ({
+                        ...annotation,
+                        gameTime: convertSecondsToGameTime(annotation.seconds),
+                        matchInfo: matchInfo
+                    }))
+                };
+
+                $.ajax({
+                    url: '/save_annotations',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(dataToSave),
+                    success: function() {
+                        originalAnnotations = JSON.parse(JSON.stringify(annotations));
+                        hasUnsavedChanges = false;
+                        updateUnsavedChangesStatus();
+                        $('#matchInfoModal').modal('hide');
+                        alert('Match information saved successfully');
+                    },
+                    error: function() {
+                        alert('Error saving annotations');
+                    }
+                });
+            },
+            error: function() {
+                alert('Error saving match information');
+            }
+        });
+    });
+
+    // Function to update video source and controls when video is loaded/selected
     function updateVideoSource(src, filename) {
         // First load the video
         videoPlayer.src = src;
         videoPlayer.load();
-        console.log('************************************************');
-        console.log('updateVideoSource -> filename', filename);
-        console.log('************************************************');
+        console.log('✏️✏️✏️✏️✏️✏️ updateVideoSource -> filename', filename);
         videoFileName = filename;
         // Show loading indicator
         $('#metadataLoading').removeClass('d-none');
@@ -579,12 +723,25 @@ $(document).ready(function () {
             videoMetadata = metadata;
             currentFrame = 0;
             console.log("Video metadata loaded:", metadata);
-
             // update videoFileName
             $('#videoFileName').text(filename);
             $('#playPauseBtn').html('<i class="bi bi-play-fill"></i>');
             updateMetadataDisplay();
             updateShortcutsVisibility();
+            updateAllModalVisibility();
+            
+            // Show elements when video is loaded
+            $('#videoContainerCard').addClass('loaded');
+            $('#metadataCard').addClass('loaded');
+            $('#eventListCard').addClass('loaded');
+            
+            // Add video-loaded class to body
+            $('body').addClass('video-loaded');
+            
+            // no display modalTitle
+            $('#modalTitle').css('display', 'none');
+            // Change video column width to col-md-7
+            $('#videoColumn').removeClass('col-md-12').addClass('col-md-7');
         }).fail(function (error) {
             console.error("Error loading metadata:", error);
             alert('Error loading video metadata');
@@ -594,8 +751,30 @@ $(document).ready(function () {
         });
     }
 
+    // Function to hide all elements when no video is loaded
+    function hideAllElements() {
+        $('#videoContainerCard').removeClass('loaded');
+        $('#metadataCard').removeClass('loaded');
+        $('#eventListCard').removeClass('loaded');
+        
+        // Remove video-loaded class from body
+        $('body').removeClass('video-loaded');
+        
+        // Change video column width to col-md-12
+        $('#videoColumn').removeClass('col-md-7').addClass('col-md-12');
+    }
+
+    // Call hideAllElements on page load
+    hideAllElements();
+
     // Update the video selection handler
     $('#videoSelect').on('change', function () {
+        if (hasUnsavedChanges) {
+            if (!confirm('You have unsaved changes. Are you sure you want to load a different video?')) {
+                $(this).val(videoFile); // Revert selection
+                return;
+            }
+        }
         const selectedVideo = $(this).val();
         if (selectedVideo) {
             // Show loading indicator
@@ -605,8 +784,9 @@ $(document).ready(function () {
                 videoFile = selectedVideo;
                 console.log('videoFile', videoFile);
                 updateVideoSource(`/uploads/${response.filename}`, response.filename);
-                // currentFormat = response.format || 'old';
                 annotations = response.annotations?.annotations || [];
+                originalAnnotations = JSON.parse(JSON.stringify(annotations)); // Deep copy
+                hasUnsavedChanges = false;
                 if (!Array.isArray(annotations)) {
                     console.error("Annotations is not a list. Type:", typeof annotations);
                     console.error("Annotations content:", annotations);
@@ -616,6 +796,7 @@ $(document).ready(function () {
                 populateEventDropdowns(currentFormat);
                 updateEventList();
                 updateShortcutsVisibility();
+                updateUnsavedChangesStatus();
             }).fail(function (error) {
                 console.error("Error loading video:", error);
                 alert('Error loading video');
@@ -631,67 +812,96 @@ $(document).ready(function () {
         }
     });
 
+    // Function to check if a video name already exists
+    function checkVideoExists(filename) {
+        return new Promise((resolve, reject) => {
+            $.get('/get_videos', function(videos) {
+                const exists = videos.some(video => video.filename === filename);
+                resolve(exists);
+            }).fail(function(error) {
+                console.error("Error checking video existence:", error);
+                reject(error);
+            });
+        });
+    }
+
     // Update the video upload handler
     $('#videoUpload').on('change', function (e) {
         console.log('✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️')
         console.log('videoUpload -> change -> videoFile', videoFile);
         videoFile = e.target.files[0];
         if (videoFile) {
-            const formData = new FormData();
-            formData.append('video', videoFile);
+            // Check if video with same name already exists
+            checkVideoExists(videoFile.name)
+                .then(exists => {
+                    if (exists) {
+                        alert(`A video with the name "${videoFile.name}" already exists. Please choose a different file or rename it.`);
+                        // Reset the file input
+                        $(this).val('');
+                        videoFile = null;
+                        return;
+                    }
+                    
+                    // If video doesn't exist, proceed with upload
+                    const formData = new FormData();
+                    formData.append('video', videoFile);
 
-            $('#uploadProgress').removeClass('d-none');
-            const progressBar = $('#uploadProgress .progress-bar');
+                    $('#uploadProgress').removeClass('d-none');
+                    const progressBar = $('#uploadProgress .progress-bar');
 
-            $.ajax({
-                url: '/upload',
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                xhr: function () {
-                    const xhr = new window.XMLHttpRequest();
-                    xhr.upload.addEventListener('progress', function (e) {
-                        if (e.lengthComputable) {
-                            const percent = Math.round((e.loaded / e.total) * 100);
-                            progressBar.css('width', percent + '%');
+                    $.ajax({
+                        url: '/upload',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        xhr: function () {
+                            const xhr = new window.XMLHttpRequest();
+                            xhr.upload.addEventListener('progress', function (e) {
+                                if (e.lengthComputable) {
+                                    const percent = Math.round((e.loaded / e.total) * 100);
+                                    progressBar.css('width', percent + '%');
+                                }
+                            });
+                            return xhr;
+                        },
+                        success: function (response) {
+                            console.log('videoUpload -> success -> response', response);
+                            updateVideoSource(`/uploads/${response.filename}`, response.filename)
+                            //Update UI with video information
+                            annotations = response.annotations?.annotations || [];
+                            if (!Array.isArray(annotations)) {
+                                console.error("Annotations is not a list. Type:", typeof annotations);
+                                console.error("Annotations content:", annotations);
+                                annotations = [];
+                            }
+
+                            // Update UI elements
+                            populateEventDropdowns(currentFormat);
+                            updateEventList();
+                            $('#playPauseBtn').html('<i class="bi bi-play-fill"></i>');
+                            updateMetadataDisplay();
+
+                            // Hide progress bar
+                            $('#uploadProgress').addClass('d-none');
+                            progressBar.css('width', '0%');
+
+                            // Refresh video select dropdown
+                            populateVideoSelect();
+                        },
+                        error: function (error) {
+                            console.error("Upload error:", error);
+                            alert('Error uploading video');
+                            $('#uploadProgress').addClass('d-none');
+                            progressBar.css('width', '0%');
+                            $('#metadataLoading').addClass('d-none');
                         }
                     });
-                    return xhr;
-                },
-                success: function (response) {
-                    console.log('videoUpload -> success -> response', response);
-                    updateVideoSource(`/uploads/${response.filename}`, response.filename)
-                    //Update UI with video information
-                    currentFormat = response.format || 'old';
-                    annotations = response.annotations?.annotations || [];
-                    if (!Array.isArray(annotations)) {
-                        console.error("Annotations is not a list. Type:", typeof annotations);
-                        console.error("Annotations content:", annotations);
-                        annotations = [];
-                    }
-
-                    // Update UI elements
-                    populateEventDropdowns(currentFormat);
-                    updateEventList();
-                    $('#playPauseBtn').html('<i class="bi bi-play-fill"></i>');
-                    updateMetadataDisplay();
-
-                    // Hide progress bar
-                    $('#uploadProgress').addClass('d-none');
-                    progressBar.css('width', '0%');
-
-                    // Refresh video select dropdown
-                    populateVideoSelect();
-                },
-                error: function (error) {
-                    console.error("Upload error:", error);
-                    alert('Error uploading video');
-                    $('#uploadProgress').addClass('d-none');
-                    progressBar.css('width', '0%');
-                    $('#metadataLoading').addClass('d-none');
-                }
-            });
+                })
+                .catch(error => {
+                    console.error("Error checking video existence:", error);
+                    alert('Error checking if video already exists. Please try again.');
+                });
         }
     });
 
@@ -713,6 +923,9 @@ $(document).ready(function () {
         openEventModal();
     });
 
+    function updateAllModalVisibility() {
+        //
+    }
 
     function openEventModal(label = '', annotation_index = -1) {
         if (modalOpened) {
@@ -826,7 +1039,6 @@ $(document).ready(function () {
         }
     }
 
-
     // Save annotations
     $('#saveAnnotationsBtn').on('click', function () {
         if (!videoFile || annotations.length === 0) {
@@ -849,6 +1061,9 @@ $(document).ready(function () {
             contentType: 'application/json',
             data: JSON.stringify(dataToSave),
             success: function () {
+                originalAnnotations = JSON.parse(JSON.stringify(annotations)); // Update original annotations
+                hasUnsavedChanges = false;
+                updateUnsavedChangesStatus();
                 alert('Annotations saved successfully');
             },
             error: function () {
@@ -880,7 +1095,7 @@ $(document).ready(function () {
                         <p style="flex: 1; word-break: break-all;">
                             <strong>${displayLabel}:</strong> ${formatTimeToSeconds(event.seconds)} | ${event.team}
                         </p>
-                        <div>
+                        <div class="d-flex gap-2">
                             <button class="btn btn-sm btn-danger float-end" onclick="deleteEvent(${index})"><i class="bi bi-trash"></i></button>
                             <button class="btn btn-sm btn-warning float-end me-2" onclick="editEvent(${index})"><i class="bi bi-pencil"></i></button>
                         </div>
@@ -897,12 +1112,16 @@ $(document).ready(function () {
 
     // Delete event
     window.deleteEvent = function (index) {
+        if (!confirm('Are you sure you want to delete this event?')) {
+            return;
+        }
         const filter = $('#eventFilter').val();
         const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
 
         if (index >= 0 && index < filteredAnnotations.length) {
             annotations.splice(annotations.indexOf(filteredAnnotations[index]), 1);
             updateEventList();
+            updateUnsavedChangesStatus();
         }
     };
 
@@ -916,7 +1135,9 @@ $(document).ready(function () {
 
     // Playback speed control
     $('#playbackSpeed').on('change', function () {
-        videoPlayer.playbackRate = parseFloat($(this).val());
+        const newRate = parseFloat($(this).val());
+        videoPlayer.playbackRate = newRate;
+        updateSeekTime(newRate);
     });
 
     // Volume control
@@ -936,6 +1157,7 @@ $(document).ready(function () {
         annotations.push(newAnnotation);
         annotations.sort((a, b) => a.seconds - b.seconds);
         updateEventList();
+        updateUnsavedChangesStatus();
     }
 
     // Function to edit an existing annotation
@@ -945,5 +1167,32 @@ $(document).ready(function () {
         annotations[originalIndex] = updatedAnnotation;
         annotations.sort((a, b) => a.seconds - b.seconds);
         updateEventList();
+        updateUnsavedChangesStatus();
     }
+
+    // Function to check if annotations have changed
+    function checkForChanges() {
+        if (!videoFile) return false;
+        if (annotations.length !== originalAnnotations.length) return true;
+        return JSON.stringify(annotations) !== JSON.stringify(originalAnnotations);
+    }
+
+    // Function to update unsaved changes status
+    function updateUnsavedChangesStatus() {
+        hasUnsavedChanges = checkForChanges();
+        if (hasUnsavedChanges) {
+            $('#saveAnnotationsBtn').addClass('btn-warning').removeClass('btn-success');
+        } else {
+            $('#saveAnnotationsBtn').addClass('btn-success').removeClass('btn-warning');
+        }
+    }
+
+    // Add window beforeunload event
+    window.addEventListener('beforeunload', function(e) {
+        if (hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            return e.returnValue;
+        }
+    });
 });

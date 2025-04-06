@@ -41,7 +41,8 @@ label_to_event = {
 reversed_label_to_event = {v: k for k, v in label_to_event.items()}
 print("reversed_label_to_event",reversed_label_to_event)
 # route cơ bản
-ind=None
+# ind=None
+
 @app.route('/')
 def index():
     print("----------------> / -> index")
@@ -102,14 +103,12 @@ def select_video(filename):
 
     # Get annotations
     annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{video_name}.json')
-    format_type = None
-
+    
     if os.path.exists(annotation_path):
         with open(annotation_path, 'r') as f:
             # load annotations từ BE lên FE
             annotations = json.load(f)
             annotations['annotations'] = [_format_annotation_for_webapp(annotation) for annotation in annotations['annotations']]
-            format_type = "new"
     else:
         annotations = {
             "UrlLocal": "",
@@ -122,14 +121,10 @@ def select_video(filename):
         }
         with open(annotation_path, 'w') as f:
             json.dump(annotations, f, indent=4)
-        format_type = "new"
 
     global ind
     index = add_seconds_to_events(annotation_path, video_name)
     ind = index
-
-    if format_type == "new" and ind != None:
-        annotations = annotations["videos"][index]
     print("----------------> /select_video -> select_video -> annotations -> " + str(annotations))
     return jsonify({
         'filename': filename,
@@ -137,7 +132,6 @@ def select_video(filename):
         'fps': metadata['fps'],
         'frame_count': metadata['frame_count'],
         'annotations': annotations,
-        'format': format_type
     })
 
 def extract_video_metadata(video_path):
@@ -201,7 +195,6 @@ def upload_video():
 
     # Get annotations
     annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{video_file.filename.split(".")[0]}.json')
-    format_type = None
 
     if os.path.exists(annotation_path):
         with open(annotation_path, 'r') as f:
@@ -209,7 +202,6 @@ def upload_video():
             annotations = json.load(f)
             print("----------------> /upload -> upload_video -> annotations -> " + str(annotations))
             annotations = [_format_annotation_for_webapp(annotation) for annotation in annotations['annotations']]
-            format_type = "new"
     else:
         annotations = {
             "UrlLocal": "",
@@ -222,7 +214,6 @@ def upload_video():
         }
         with open(annotation_path, 'w') as f:
             json.dump(annotations, f, indent=4)
-        format_type = "old"
 
     # Sử dụng biến toàn cục ind để lưu trữ chỉ số của video trong danh sách videos (nếu sử dụng định dạng mới)
     global ind
@@ -231,14 +222,6 @@ def upload_video():
     index=add_seconds_to_events(annotation_path,video_file.filename.split(".")[0])
 
     # Lưu chỉ số vào biến toàn cục ind
-    ind=index
-
-    # Nếu đang sử dụng định dạng mới và có chỉ số hợp lệ
-    if format_type=="new" and ind!=None:
-        print("----------------> /upload -> upload_video -> format_type -> new")
-        # Chỉ lấy chú thích của video cụ thể từ danh sách videos
-        annotations  = annotations["videos"][index] 
-        print("----------------> /upload -> upload_video -> format_type -> new -> " + annotations)
 
     # In loại dữ liệu của chú thích để debug
     print("Annotations loaded:", type(annotations))  # Debugging
@@ -250,7 +233,6 @@ def upload_video():
         'fps': metadata['fps'],
         'frame_count': metadata['frame_count'],
         'annotations': annotations,  # Include annotations in the response
-        'format': format_type  # Send the format to the client
     })
 
 
@@ -412,6 +394,7 @@ def save_annotations():
     # Tạo đường dẫn đến file chú thích dựa trên tên file video
     annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{filename.split(".")[0]}.json')
 
+    
     # Kiểm tra xem file chú thích đã tồn tại chưa
     if os.path.exists(annotation_path):
         print("----------------> /save_annotations -> save_annotations -> exists file annotation") 
@@ -434,25 +417,30 @@ def save_annotations():
             "gameScore": "",
             "annotations": []
         }
+    # Tìm match metadata của trận và lưu vào các mục của file chú thích
+    metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{filename.split(".")[0]}.json')
+    with open(metadata_path, 'r') as f:
+        metadata = json.load(f)
+        urlLocalLoaded = metadata["matchInfo"]["urlLocal"]
+        print("----------------> /save_annotations -> save_annotations -> urlLocalLoaded -> " + urlLocalLoaded, os.path.basename(urlLocalLoaded))
+        
+        # check if name of upload folder is in path, if not insert
+        if app.config['UPLOAD_FOLDER'] not in urlLocalLoaded:
+            print("----------------> /save_annotations -> save_annotations -> urlLocalLoaded -> not in upload folder")
+            urlLocalLoaded = os.path.join(app.config['UPLOAD_FOLDER'], urlLocalLoaded)
+        original_data["UrlLocal"] = urlLocalLoaded
+        # original_data["UrlYoutube"] = metadata["UrlYoutube"]
+        original_data["gameHomeTeam"] = metadata["matchInfo"]["gameHomeTeam"]
+        original_data["gameAwayTeam"] = metadata["matchInfo"]["gameAwayTeam"]
+        original_data["gameDate"] = metadata["matchInfo"]["gameDate"]
+        original_data["gameScore"] = metadata["matchInfo"]["gameScore"]
 
-    # Sử dụng biến toàn cục ind để truy cập chỉ số video đã xác định trước đó (có thể từ route upload)
-    global ind
 
-    # Kiểm tra xem dữ liệu có tuân theo định dạng mới không
-    if "version" in original_data and "videos" in original_data:
-        print("----------------> /save_annotations -> save_annotations -> version and video") 
-        # Nếu là định dạng mới: Kiểm tra xem danh sách videos có phần tử nào không
-        if original_data["videos"]:
-            # Cập nhật chú thích của video cụ thể tại chỉ số ind
-            original_data["videos"][ind]["annotations"] = annotations
-        else:
-            # Nếu không có video nào: Tạo một mục mới trong danh sách videos với chú thích được cung cấp
-            original_data["videos"] = [{"annotations": annotations}]
-    else:
-        print("----------------> /save_annotations -> save_annotations -> not version and video") 
-        # Nếu là định dạng cũ: Cập nhật trực tiếp trường "annotations"
-        formated_annotations = _format_annotations(annotations)
-        original_data["annotations"] = formated_annotations
+    # Nếu là định dạng cũ: Cập nhật trực tiếp trường "annotations"    
+    print("----------------> /save_annotations -> save_annotations -> not version and video") 
+    # Nếu là định dạng cũ: Cập nhật trực tiếp trường "annotations"
+    formated_annotations = _format_annotations(annotations)
+    original_data["annotations"] = formated_annotations
     
     # Lưu dữ liệu đã cập nhật và trả về phản hồi
     with open(annotation_path, 'w') as f:
@@ -485,18 +473,16 @@ def get_annotations(filename):
         # In thông tin chú thích để debug
         with open(annotation_path, 'r') as f:
             annotations = json.load(f)
-            format_type = determine_format(annotations)  # Determine the format
             print("Annotations loaded:", annotations)
 
         # jsonify(): Chuyển đổi đối tượng Python thành phản hồi JSON
         return jsonify({
             'annotations': annotations,
-            'format': format_type  # Send the format to the client
         })
     
     # Nếu file không tồn tại, trả về một mảng chú thích rỗng
     # Mặc định sử dụng định dạng "old" khi không có file
-    return jsonify({'annotations': [], 'format': 'old'})  # Default to old format if no file exists
+    return jsonify({'annotations': []})  # Default to old format if no file exists
 
 @app.route('/get_frame/<video_name>/<frame_number>')
 def get_frame(video_name, frame_number):
@@ -514,6 +500,28 @@ def get_video_metadata(video_name):
         with open(metadata_path, 'r') as f:
             return jsonify(json.load(f))
     return jsonify({'error': 'Metadata not found'}), 404
+
+@app.route('/save_metadata', methods=['POST'])
+def save_metadata():
+    """Save video metadata including match information"""
+    try:
+        data = request.get_json()
+        filename = data.get('filename')
+        metadata = data.get('metadata')
+
+        if not filename or not metadata:
+            return jsonify({'error': 'Missing filename or metadata'}), 400
+
+        video_name = os.path.splitext(filename)[0]
+        metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
+
+        # Save metadata
+        with open(metadata_path, 'w') as f:
+            json.dump(metadata, f, indent=4)
+
+        return jsonify({'message': 'Metadata saved successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000, debug=True)

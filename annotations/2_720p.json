@@ -5,22 +5,5 @@
     "gameAwayTeam": "",
     "gameDate": "",
     "gameScore": "",
-    "annotations": [
-        {
-            "label": "Clearance",
-            "position": "33350",
-            "team": "home",
-            "visibility": "visible",
-            "gameTime": "1 - 00:33.350",
-            "seconds": 33.35
-        },
-        {
-            "label": "Shots off target",
-            "position": "59730",
-            "team": "home",
-            "visibility": "visible",
-            "gameTime": "1 - 00:59.730",
-            "seconds": 59.73
-        }
-    ]
+    "annotations": []
 }

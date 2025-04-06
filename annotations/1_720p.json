@@ -1,17 +1,74 @@
 {
-    "UrlLocal": "",
+    "UrlLocal": "uploads\\1_720p.mkv",
     "UrlYoutube": "",
-    "gameHomeTeam": "",
-    "gameAwayTeam": "",
-    "gameDate": "",
-    "gameScore": "",
+    "gameHomeTeam": "Cheasea",
+    "gameAwayTeam": "Burnley",
+    "gameDate": "2025-04-15",
+    "gameScore": "1-2",
     "annotations": [
         {
-            "seconds": 1.52,
-            "label": "foul",
+            "label": "Ball out of play",
+            "position": "804940",
+            "team": "not_applicable",
+            "visibility": "visible",
+            "gameTime": "1 - 13:24.940",
+            "seconds": 804.94
+        },
+        {
+            "label": "Substitution",
+            "position": "1185280",
             "team": "home",
             "visibility": "visible",
-            "gameTime": "1 - 00:01.520"
+            "gameTime": "1 - 19:45.280",
+            "seconds": 1185.28
+        },
+        {
+            "label": "Clearance",
+            "position": "1226800",
+            "team": "home",
+            "visibility": "visible",
+            "gameTime": "1 - 20:26.800",
+            "seconds": 1226.8
+        },
+        {
+            "label": "Ball out of play",
+            "position": "1232960",
+            "team": "not_applicable",
+            "visibility": "visible",
+            "gameTime": "1 - 20:32.960",
+            "seconds": 1232.96
+        },
+        {
+            "label": "Ball out of play",
+            "position": "1257280",
+            "team": "not_applicable",
+            "visibility": "visible",
+            "gameTime": "1 - 20:57.280",
+            "seconds": 1257.28
+        },
+        {
+            "label": "Shots off target",
+            "position": "1323370",
+            "team": "away",
+            "visibility": "visible",
+            "gameTime": "1 - 22:03.370",
+            "seconds": 1323.37
+        },
+        {
+            "label": "Shots off target",
+            "position": "1440240",
+            "team": "home",
+            "visibility": "visible",
+            "gameTime": "1 - 24:00.240",
+            "seconds": 1440.24
+        },
+        {
+            "label": "Ball out of play",
+            "position": "2480050",
+            "team": "home",
+            "visibility": "visible",
+            "gameTime": "1 - 41:20.050",
+            "seconds": 2480.05
         }
     ]
 }

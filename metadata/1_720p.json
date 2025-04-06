@@ -1,7 +1,14 @@
 {
-    "fps": 25.0,
-    "frame_count": 67500,
-    "width": 1280,
+    "duration": 2767,
+    "fps": 25,
+    "frame_count": 69175,
     "height": 720,
-    "duration": 2700.0
+    "width": 1280,
+    "matchInfo": {
+        "urlLocal": "1_720p.mkv",
+        "gameHomeTeam": "Cheasea",
+        "gameAwayTeam": "Burnley",
+        "gameDate": "2025-04-15",
+        "gameScore": "1-2"
+    }
 }

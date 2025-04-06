@@ -18,28 +18,150 @@ body {
 }
 
 .modal-content {
-    border-radius: 10px;
-    z-index: 1050;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border: none;
+    pointer-events: auto;
+    position: relative;
+    z-index: 1056;
 }
 
 .modal-header {
-    background-color: #007bff;
+    background-color: #4361ee;
     color: white;
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 1rem 1.5rem;
+    border-bottom: none;
 }
 
 .modal-title {
-    font-weight: bold;
+    font-weight: 600;
+    font-size: 1.25rem;
 }
 
-.btn-close {
-    filter: invert(1);
+.modal-body {
+    padding: 1.5rem;
 }
 
-#videoContainer {
+.modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.modal .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.modal .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.modal .btn-close:hover {
+    opacity: 1;
+}
+
+.modal .btn-primary {
+    background-color: #4361ee;
+    border-color: #4361ee;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.modal .btn-primary:hover {
+    background-color: #3046c9;
+    border-color: #3046c9;
+}
+
+.modal .btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+}
+
+.modal .btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+}
+
+.modal {
+    z-index: 1050;
+    display: none;
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1040;
+}
+
+.modal-backdrop.show {
+    display: block;
+}
+
+/* Ensure modals are properly focused when shown */
+.modal.fade.show {
+    z-index: 1055;
+    pointer-events: auto;
+}
+
+/* Ensure modal content is clickable */
+.modal-content {
+    pointer-events: auto;
+    position: relative;
+    z-index: 1056;
+}
+
+/* Ensure form elements in modals are clickable */
+.modal input, 
+.modal select, 
+.modal textarea, 
+.modal button {
+    pointer-events: auto;
+}
+
+/* Hide video player and controls initially */
+#videoContainerCard {
     position: relative;
     width: 100%;
+    display: none;
+}
+
+#videoContainerCard.loaded {
+    display: block;
+}
+
+/* Hide metadata card initially */
+#metadataCard {
+    display: none;
+}
+
+#metadataCard.loaded {
+    display: block;
+}
+
+/* Hide event list initially */
+#eventListCard {
+    display: none;
+}
+
+#eventListCard.loaded {
+    display: block;
+    width: 100%;
+    max-height: 600px;
+    overflow-y: auto;
 }
 
 #seekBarMarkers {
@@ -81,19 +203,6 @@ body {
     background-color: #ddd;
 }
 
-.modal-backdrop {
-    z-index: 9998;
-}
-
-.modal {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10500; /* Higher than other elements, including full-screen video */
-    pointer-events: auto;
-}
-
 .seek-bar {
     position: relative;
     width: 100%;
@@ -121,6 +230,132 @@ body {
 /* Add active state */
 .seek-bar:active .seek-bar-progress {
     background-color: #004085;
+}
+
+/* Video selection card styling */
+.video-selection-card {
+    max-width: 800px;
+    margin: 2rem auto;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.video-selection-card .card-header {
+    background-color: #4361ee;
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+    padding: 1.25rem;
+}
+
+.video-selection-card .card-header h5 {
+    color: white;
+    font-weight: 600;
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.video-selection-card .card-body {
+    padding: 2rem;
+    background-color: #ffffff;
+}
+
+.video-selection-card .form-label {
+    color: #495057;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+}
+
+.video-selection-card .form-select,
+.video-selection-card .form-control {
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.video-selection-card .form-select:focus,
+.video-selection-card .form-control:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+}
+
+.video-selection-card #uploadProgress {
+    margin-top: 1.5rem;
+    height: 0.5rem;
+    border-radius: 0.25rem;
+    overflow: hidden;
+}
+
+.video-selection-card #uploadProgress .progress-bar {
+    background-color: #4361ee;
+    transition: width 0.2s ease;
+}
+
+/* When video is loaded, adjust the video selection card */
+.video-loaded .video-selection-card {
+    max-width: 100%;
+    margin: 0 0 1rem 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.video-loaded .video-selection-card .card-header {
+    padding: 1rem;
+}
+
+.video-loaded .video-selection-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Center the video selection card when no video is loaded */
+#videoColumn.col-md-12 .video-selection-card {
+    max-width: 800px;
+    margin: 2rem auto;
+}
+
+/* Adjust the video selection card when video is loaded */
+#videoColumn.col-md-7 .video-selection-card {
+    max-width: 100%;
+    margin: 0 0 1rem 0;
+}
+
+/* Style for the modal title */
+#modalTitle {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #4361ee;
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+    border-bottom: 2px solid #4361ee;
+    width: 100%;
+}
+
+/* Hide modal title when video is loaded */
+.video-loaded #modalTitle {
+    display: none;
+}
+
+/* Style for the match info modal title */
+#matchInfoModalLabel {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    width: 100%;
+    margin-right: 0;
+}
+
+/* Adjust the match info modal header */
+#matchInfoModal .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#matchInfoModal .modal-header .btn-close {
+    margin-left: 0;
 }
 
 
