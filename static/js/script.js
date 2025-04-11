@@ -9,7 +9,7 @@ $(document).ready(function () {
     let videoMetadata = null;
     let currentFrame = 0;
     let frameRate = 30; // Default frame rate, will be updated when video loads
-    let modalOpened = false; // Track if modal is currently open
+    let addEventModalOpened = false; // Track if modal is currently open
     let videoFileName = null;
     let hasUnsavedChanges = false; // Track if there are unsaved changes
     let originalAnnotations = []; // Store original annotations for comparison
@@ -271,7 +271,7 @@ $(document).ready(function () {
 
     // Function to seek to a specific time
     function seekTo(time) {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
 
         // Ensure time is within valid range
         time = Math.max(0, Math.min(time, videoPlayer.duration));
@@ -299,7 +299,7 @@ $(document).ready(function () {
 
     // Function to seek by frames
     function seekByFrames(frames) {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
         if (!videoMetadata) return;
 
         // Calculate new frame number
@@ -333,7 +333,7 @@ $(document).ready(function () {
     // Frame navigation with debouncing
     let frameTimeout;
     $('#seekBackFrame').on('click', function () {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
         clearTimeout(frameTimeout);
         frameTimeout = setTimeout(() => {
             seekByFrames(-1);
@@ -341,7 +341,7 @@ $(document).ready(function () {
     });
 
     $('#seekForwardFrame').on('click', function () {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
         clearTimeout(frameTimeout);
         frameTimeout = setTimeout(() => {
             seekByFrames(1);
@@ -354,9 +354,6 @@ $(document).ready(function () {
 
     // Update keyboard shortcuts
     $(document).on('keydown', function (e) {
-        // Prevent keyboard shortcuts when any modal is open
-        if (modalOpened || matchInfoModalOpened) return;
-
         // Event label shortcuts
         const shortcuts = {
             '0': 'ball_out_of_play',
@@ -378,7 +375,7 @@ $(document).ready(function () {
             'x': 'yellow_red_card'
         };
         // console.log('keydown -> e', e);
-        if (modalOpened) {
+        if (addEventModalOpened) {
             const key = e.key.toLowerCase();
             if (shortcuts[key]) {
                 e.preventDefault();
@@ -391,31 +388,31 @@ $(document).ready(function () {
                 case 'ArrowRight':
                     e.preventDefault();
                     const team = $('#team').val();
-                    console.log("modalOpened -> team ", team);
+                    console.log("addEventModalOpened -> team ", team);
                     const teamOptions = $('#team').find('option').map(function() {
                         return $(this).val();
                     }).get();
-                    console.log("modalOpened -> teamOptions ", teamOptions);
+                    console.log("addEventModalOpened -> teamOptions ", teamOptions);
                     const currentIndexTeam = teamOptions.indexOf(team);
-                    console.log("modalOpened -> currentIndexTeam ", currentIndexTeam);
-                    console.log("modalOpened -> ArrowLeftRight");
+                    console.log("addEventModalOpened -> currentIndexTeam ", currentIndexTeam);
+                    console.log("addEventModalOpened -> ArrowLeftRight");
                     // set next value of team
                     let nextIndexTeam = currentIndexTeam;
-                    console.log("modalOpened -> ArrowLeftRight -> currentIndexTeam ", currentIndexTeam);
+                    console.log("addEventModalOpened -> ArrowLeftRight -> currentIndexTeam ", currentIndexTeam);
                     if (e.key === 'ArrowLeft') {
-                        console.log("modalOpened -> ArrowLeft");
+                        console.log("addEventModalOpened -> ArrowLeft");
                         nextIndexTeam = (currentIndexTeam - 1 + teamOptions.length) % teamOptions.length;
                     } else {
-                        console.log("modalOpened -> ArrowRight");
+                        console.log("addEventModalOpened -> ArrowRight");
                         nextIndexTeam = (currentIndexTeam + 1) % teamOptions.length;
                     }
-                    console.log("modalOpened -> ArrowLeftRight -> nextIndexTeam ", nextIndexTeam);
+                    console.log("addEventModalOpened -> ArrowLeftRight -> nextIndexTeam ", nextIndexTeam);
                     $('#team').val(teamOptions[nextIndexTeam]);
                     break;
                 case 'ArrowUp':
                 case 'ArrowDown':
                     e.preventDefault();
-                    console.log("modalOpened -> ArrowUpDown");
+                    console.log("addEventModalOpened -> ArrowUpDown");
                     const visibility = $('#visibility').val();
                     const visibilityOptions = $('#visibility').find('option').map(function() {
                         return $(this).val();
@@ -423,25 +420,39 @@ $(document).ready(function () {
                     const currentIndexVisibility = visibilityOptions.indexOf(visibility);
                     // set next value for visibility
                     let nextIndexVisibility = currentIndexVisibility;
-                    console.log("modalOpened -> ArrowUpDown -> currentIndexVisibility ", currentIndexVisibility);
+                    console.log("addEventModalOpened -> ArrowUpDown -> currentIndexVisibility ", currentIndexVisibility);
                     if (e.key === 'ArrowUp') {
-                        console.log("modalOpened -> ArrowUp");  
+                        console.log("addEventModalOpened -> ArrowUp");  
                         nextIndexVisibility = (currentIndexVisibility - 1 + visibilityOptions.length) % visibilityOptions.length;
                     } else {
-                        console.log("modalOpened -> ArrowDown");
+                        console.log("addEventModalOpened -> ArrowDown");
                         nextIndexVisibility = (currentIndexVisibility + 1) % visibilityOptions.length;
                     }
-                    console.log("modalOpened -> ArrowUpDown -> nextIndexVisibility ", nextIndexVisibility);
+                    console.log("addEventModalOpened -> ArrowUpDown -> nextIndexVisibility ", nextIndexVisibility);
                     $('#visibility').val(visibilityOptions[nextIndexVisibility]);
                     break;
                 case 'Enter':
-                    console.log("modalOpened -> Enter");
+                    console.log("addEventModalOpened -> Enter");
                     e.preventDefault();
                     $('#saveEventBtn').click();
                     break;
             }
             return;
         }
+
+        if (matchInfoModalOpened) {
+            console.log("✏️✏️✏️✏️ addEventModalOpened -> matchInfoModalOpened");
+            if (e.key === 'Escape') {
+                $('#matchInfoModal').modal('hide');
+                console.log("addEventModalOpened -> Escape");
+                return;
+            } else if (e.key === 'Enter') {
+                $('#saveMatchInfoBtn').click();
+                console.log("addEventModalOpened -> Enter");
+                return;
+            }
+        }
+
         if (isSeeking) return; // Prevent seeking if modal is open
 
         // Check if the pressed key matches any shortcut
@@ -535,7 +546,7 @@ $(document).ready(function () {
 
     // Update seek buttons
     $('#seekBack5s').on('click', function () {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
         clearTimeout(frameTimeout);
         frameTimeout = setTimeout(() => {
             seekTo(videoPlayer.currentTime - currentSeekTime);
@@ -543,7 +554,7 @@ $(document).ready(function () {
     });
 
     $('#seekForward5s').on('click', function () {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
         clearTimeout(frameTimeout);
         frameTimeout = setTimeout(() => {
             seekTo(videoPlayer.currentTime + currentSeekTime);
@@ -552,7 +563,7 @@ $(document).ready(function () {
 
     // Custom seek bar
     $('#seekBar').on('click', function (e) {
-        if (modalOpened) return; // Prevent seeking if modal is open
+        if (addEventModalOpened) return; // Prevent seeking if modal is open
         try {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -907,15 +918,15 @@ $(document).ready(function () {
 
     // Open modal to add event
     $('#addEventModal').on('show.bs.modal', function () {
-        if (modalOpened) {
+        if (addEventModalOpened) {
             return false; // Prevent modal from opening if already open
         }
-        modalOpened = true;
+        addEventModalOpened = true;
     });
 
     // Handle modal hidden event
     $('#addEventModal').on('hidden.bs.modal', function () {
-        modalOpened = false;
+        addEventModalOpened = false;
     });
 
     // Add event button clicked
@@ -928,7 +939,7 @@ $(document).ready(function () {
     }
 
     function openEventModal(label = '', annotation_index = -1) {
-        if (modalOpened) {
+        if (addEventModalOpened) {
             return; // Prevent opening if modal is already open
         }
         if (!videoFile) {
