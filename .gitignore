@@ -3,3 +3,5 @@
 
 uploads/*
 upload_files/*
+metadata/*
+annotations/*
