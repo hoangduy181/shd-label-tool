@@ -421,7 +421,12 @@ def save_annotations():
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{filename.split(".")[0]}.json')
     with open(metadata_path, 'r') as f:
         metadata = json.load(f)
-        urlLocalLoaded = metadata["matchInfo"]["urlLocal"]
+        matchInfoLoaded = metadata.get("matchInfo", None)
+        if not matchInfoLoaded:
+            print("----------------> /save_annotations -> save_annotations -> matchInfoLoaded -> not found")
+            return jsonify({'error': 'Match info not found'}), 400
+        
+        urlLocalLoaded = matchInfoLoaded.get("urlLocal", "") 
         print("----------------> /save_annotations -> save_annotations -> urlLocalLoaded -> " + urlLocalLoaded, os.path.basename(urlLocalLoaded))
         
         # check if name of upload folder is in path, if not insert
@@ -429,11 +434,10 @@ def save_annotations():
             print("----------------> /save_annotations -> save_annotations -> urlLocalLoaded -> not in upload folder")
             urlLocalLoaded = os.path.join(app.config['UPLOAD_FOLDER'], urlLocalLoaded)
         original_data["UrlLocal"] = urlLocalLoaded
-        # original_data["UrlYoutube"] = metadata["UrlYoutube"]
-        original_data["gameHomeTeam"] = metadata["matchInfo"]["gameHomeTeam"]
-        original_data["gameAwayTeam"] = metadata["matchInfo"]["gameAwayTeam"]
-        original_data["gameDate"] = metadata["matchInfo"]["gameDate"]
-        original_data["gameScore"] = metadata["matchInfo"]["gameScore"]
+        original_data["gameHomeTeam"] = matchInfoLoaded.get("gameHomeTeam", "")
+        original_data["gameAwayTeam"] = matchInfoLoaded.get("gameAwayTeam", "")
+        original_data["gameDate"] = matchInfoLoaded.get("gameDate", "")
+        original_data["gameScore"] = matchInfoLoaded.get("gameScore", "")
 
 
     # Nếu là định dạng cũ: Cập nhật trực tiếp trường "annotations"    

@@ -305,8 +305,8 @@
                         </div>
                         <!-- controls -->
                         <div class="mt-3">
-                            <button id="addEventBtn" class="btn btn-primary">Add Event</button>
-                            <button id="saveAnnotationsBtn" class="btn btn-success">Save Annotations</button>
+                            <button id="addEventBtn" class="btn btn-primary">Add Event (Enter)</button>
+                            <button id="saveAnnotationsBtn" class="btn btn-success">Save Annotations (Ctrl + S)</button>
                             <div class="d-inline-block ms-3">
                                 <label for="playbackSpeed" class="form-label d-inline">Playback Speed</label>
                                 <select id="playbackSpeed" class="form-select d-inline-block" style="width: auto;">
@@ -392,24 +392,24 @@
                     </div>
                     <div class="card-body">
                         <div class="d-flex flex-column gap-2" id="eventShortcuts">
-                            <button class="btn action-btn" data-action="ball_out_of_play">Ball out of play (0)</button>
-                            <button class="btn action-btn" data-action="throw_in">Throw-in (1)</button>
-                            <button class="btn action-btn" data-action="foul">Foul (2)</button>
-                            <button class="btn action-btn" data-action="indirect_free_kick">Indirect free-kick
+                            <button class="btn action-btn button" id="es-boop" data-action="ball_out_of_play">Ball out of play (0)</button>
+                            <button class="btn action-btn button" id="es-throw_in" data-action="throw_in">Throw-in (1)</button>
+                            <button class="btn action-btn button" id="es-foul" data-action="foul">Foul (2)</button>
+                            <button class="btn action-btn button" id="es-indirect_free_kick" data-action="indirect_free_kick">Indirect free-kick
                                 (3)</button>
-                            <button class="btn action-btn" data-action="clearance">Clearance (4)</button>
-                            <button class="btn action-btn" data-action="shots_on_target">Shots on target (5)</button>
-                            <button class="btn action-btn" data-action="shots_off_target">Shots off target (6)</button>
-                            <button class="btn action-btn" data-action="corner">Corner (7)</button>
-                            <button class="btn action-btn" data-action="substitution">Substitution (8)</button>
-                            <button class="btn action-btn" data-action="kick_off">Kick-off (9)</button>
-                            <button class="btn action-btn" data-action="direct_free_kick">Direct free-kick (D)</button>
-                            <button class="btn action-btn" data-action="offside">Offside (V)</button>
-                            <button class="btn action-btn" data-action="yellow_card">Yellow card (Y)</button>
-                            <button class="btn action-btn" data-action="goal">Goal (G)</button>
-                            <button class="btn action-btn" data-action="penalty">Penalty (P)</button>
-                            <button class="btn action-btn" data-action="red_card">Red card (R)</button>
-                            <button class="btn action-btn" data-action="yellow_red_card">Yellow->red card (X)</button>
+                            <button class="btn action-btn button" id="es-clearance" data-action="clearance">Clearance (4)</button>
+                            <button class="btn action-btn button" id="es-shots_on_target" data-action="shots_on_target">Shots on target (5)</button>
+                            <button class="btn action-btn button" id="es-shots_off_target" data-action="shots_off_target">Shots off target (6)</button>
+                            <button class="btn action-btn button" id="es-corner" data-action="corner">Corner (7)</button>
+                            <button class="btn action-btn button" id="es-substitution" data-action="substitution">Substitution (8)</button>
+                            <button class="btn action-btn button" id="es-kick_off" data-action="kick_off">Kick-off (9)</button>
+                            <button class="btn action-btn button" id="es-direct_free_kick" data-action="direct_free_kick">Direct free-kick (D)</button>
+                            <button class="btn action-btn button" id="es-offside" data-action="offside">Offside (V)</button>
+                            <button class="btn action-btn button" id="es-yellow_card" data-action="yellow_card">Yellow card (Y)</button>
+                            <button class="btn action-btn button" id="es-goal" data-action="goal">Goal (G)</button>
+                            <button class="btn action-btn button" id="es-penalty" data-action="penalty">Penalty (P)</button>
+                            <button class="btn action-btn button" id="es-red_card" data-action="red_card">Red card (R)</button>
+                            <button class="btn action-btn button" id="es-yellow_red_card" data-action="yellow_red_card">Yellow->red card (X)</button>
                         </div>
                     </div>
                 </div>

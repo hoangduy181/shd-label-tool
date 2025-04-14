@@ -182,7 +182,7 @@ $(document).ready(function () {
     populateVideoSelect();
 
     // Add event handler for event shortcuts
-    $('#eventShortcuts').on('click', '.action-btn', function(e) {
+    $('#eventShortcuts').on('click', '.action-btn', function (e) {
         e.preventDefault();
         const label = $(this).data('action');
         if (label) {
@@ -354,6 +354,14 @@ $(document).ready(function () {
 
     // Update keyboard shortcuts
     $(document).on('keydown', function (e) {
+        // handle ctrl + S
+        if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            $('#saveAnnotationsBtn').click();
+            return;
+        }
+
+
         // Event label shortcuts
         const shortcuts = {
             '0': 'ball_out_of_play',
@@ -389,7 +397,7 @@ $(document).ready(function () {
                     e.preventDefault();
                     const team = $('#team').val();
                     console.log("addEventModalOpened -> team ", team);
-                    const teamOptions = $('#team').find('option').map(function() {
+                    const teamOptions = $('#team').find('option').map(function () {
                         return $(this).val();
                     }).get();
                     console.log("addEventModalOpened -> teamOptions ", teamOptions);
@@ -414,7 +422,7 @@ $(document).ready(function () {
                     e.preventDefault();
                     console.log("addEventModalOpened -> ArrowUpDown");
                     const visibility = $('#visibility').val();
-                    const visibilityOptions = $('#visibility').find('option').map(function() {
+                    const visibilityOptions = $('#visibility').find('option').map(function () {
                         return $(this).val();
                     }).get();
                     const currentIndexVisibility = visibilityOptions.indexOf(visibility);
@@ -422,7 +430,7 @@ $(document).ready(function () {
                     let nextIndexVisibility = currentIndexVisibility;
                     console.log("addEventModalOpened -> ArrowUpDown -> currentIndexVisibility ", currentIndexVisibility);
                     if (e.key === 'ArrowUp') {
-                        console.log("addEventModalOpened -> ArrowUp");  
+                        console.log("addEventModalOpened -> ArrowUp");
                         nextIndexVisibility = (currentIndexVisibility - 1 + visibilityOptions.length) % visibilityOptions.length;
                     } else {
                         console.log("addEventModalOpened -> ArrowDown");
@@ -457,52 +465,54 @@ $(document).ready(function () {
 
         // Check if the pressed key matches any shortcut
         const key = e.key.toLowerCase();
-        if (shortcuts[key]) {
+        if (shortcuts[key] && !matchInfoModalOpened) {
             e.preventDefault();
             openEventModal(shortcuts[key]);
             return;
         }
 
         // Handle video control shortcuts
-        switch (e.key) {
-            case ' ':
-                e.preventDefault();
-                if (videoPlayer.paused) {
-                    playVideoPlayer();
-                } else {
-                    pauseVideoPlayer();
-                }
-                break;
-            case 'ArrowLeft':
-                e.preventDefault();
-                if (e.shiftKey) {
-                    seekByFrames(-1);
-                } else {
-                    seekTo(videoPlayer.currentTime - currentSeekTime);
-                }
-                break;
-            case 'ArrowRight':
-                e.preventDefault();
-                if (e.shiftKey) {
-                    seekByFrames(1);
-                } else {
-                    seekTo(videoPlayer.currentTime + currentSeekTime);
-                }
-                break;
-            case 'ArrowUp':
-                e.preventDefault();
-                videoPlayer.volume = Math.min(videoPlayer.volume + 0.1, 1);
-                $('#volumeControl').val(videoPlayer.volume);
-                break;
-            case 'ArrowDown':
-                e.preventDefault();
-                videoPlayer.volume = Math.max(videoPlayer.volume - 0.1, 0);
-                $('#volumeControl').val(videoPlayer.volume);
-                break;
-            case 'Enter':
-                e.preventDefault();
-                $('#addEventBtn').click();
-                break;
+        if (!matchInfoModalOpened && !addEventModalOpened   ) {
+            switch (e.key) {
+                case ' ':
+                    e.preventDefault();
+                    if (videoPlayer.paused) {
+                        playVideoPlayer();
+                    } else {
+                        pauseVideoPlayer();
+                    }
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        seekByFrames(-1);
+                    } else {
+                        seekTo(videoPlayer.currentTime - currentSeekTime);
+                    }
+                    break;
+                case 'ArrowRight':
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        seekByFrames(1);
+                    } else {
+                        seekTo(videoPlayer.currentTime + currentSeekTime);
+                    }
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    videoPlayer.volume = Math.min(videoPlayer.volume + 0.1, 1);
+                    $('#volumeControl').val(videoPlayer.volume);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    videoPlayer.volume = Math.max(videoPlayer.volume - 0.1, 0);
+                    $('#volumeControl').val(videoPlayer.volume);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    $('#addEventBtn').click();
+                    break;
+            }
         }
     });
 
@@ -591,7 +601,17 @@ $(document).ready(function () {
             if (videoMetadata.matchInfo) {
                 matchInfo = videoMetadata.matchInfo;
                 updateMatchInfoForm();
+            } else {
+                matchInfo = {
+                    urlLocal: '',
+                    gameHomeTeam: '',
+                    gameAwayTeam: '',
+                    gameDate: '',
+                    gameScore: ''
+                };
+                updateMatchInfoForm();
             }
+
         } catch (error) {
             console.error("Error updateMetadataDisplay:", error);
         }
@@ -604,7 +624,7 @@ $(document).ready(function () {
         $('#gameAwayTeam').val(matchInfo.gameAwayTeam || '');
         $('#gameDate').val(matchInfo.gameDate || '');
         $('#gameScore').val(matchInfo.gameScore || '');
-        
+
         // Update the modal title with video name if available
         if (videoFileName) {
             $('#matchInfoModalLabel').text(`Match Information - ${videoFileName}`);
@@ -614,7 +634,7 @@ $(document).ready(function () {
     }
 
     // Handle edit match info button click
-    $('#editMatchInfoBtn').on('click', function() {
+    $('#editMatchInfoBtn').on('click', function () {
         if (!videoFile) {
             alert('Please load a video first');
             return;
@@ -633,12 +653,12 @@ $(document).ready(function () {
         } else {
             $('#matchInfoModalLabel').text('Match Information');
         }
-        
+
         // Ensure the modal is properly focused
-        setTimeout(function() {
+        setTimeout(function () {
             // Focus on the first input field
             $('#gameHomeTeam').focus();
-            
+
             // Ensure the modal is clickable
             $('#matchInfoModal').css('pointer-events', 'auto');
             $('.modal-content').css('pointer-events', 'auto');
@@ -655,7 +675,7 @@ $(document).ready(function () {
     });
 
     // Handle save match info button click
-    $('#saveMatchInfoBtn').on('click', function() {
+    $('#saveMatchInfoBtn').on('click', function () {
         const form = document.getElementById('matchInfoForm');
         if (!form.checkValidity()) {
             form.reportValidity();
@@ -682,10 +702,10 @@ $(document).ready(function () {
                     matchInfo: matchInfo
                 }
             }),
-            success: function() {
+            success: function () {
                 // Update video metadata
                 videoMetadata.matchInfo = matchInfo;
-                
+
                 // Update annotations with match info
                 const dataToSave = {
                     filename: videoFileName,
@@ -701,19 +721,20 @@ $(document).ready(function () {
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(dataToSave),
-                    success: function() {
+                    success: function () {
                         originalAnnotations = JSON.parse(JSON.stringify(annotations));
                         hasUnsavedChanges = false;
                         updateUnsavedChangesStatus();
                         $('#matchInfoModal').modal('hide');
                         alert('Match information saved successfully');
                     },
-                    error: function() {
+                    error: function (error) {
                         alert('Error saving annotations');
+                        console.log('error', error);
                     }
                 });
             },
-            error: function() {
+            error: function () {
                 alert('Error saving match information');
             }
         });
@@ -740,15 +761,15 @@ $(document).ready(function () {
             updateMetadataDisplay();
             updateShortcutsVisibility();
             updateAllModalVisibility();
-            
+
             // Show elements when video is loaded
             $('#videoContainerCard').addClass('loaded');
             $('#metadataCard').addClass('loaded');
             $('#eventListCard').addClass('loaded');
-            
+
             // Add video-loaded class to body
             $('body').addClass('video-loaded');
-            
+
             // no display modalTitle
             $('#modalTitle').css('display', 'none');
             // Change video column width to col-md-7
@@ -767,10 +788,10 @@ $(document).ready(function () {
         $('#videoContainerCard').removeClass('loaded');
         $('#metadataCard').removeClass('loaded');
         $('#eventListCard').removeClass('loaded');
-        
+
         // Remove video-loaded class from body
         $('body').removeClass('video-loaded');
-        
+
         // Change video column width to col-md-12
         $('#videoColumn').removeClass('col-md-7').addClass('col-md-12');
     }
@@ -787,6 +808,8 @@ $(document).ready(function () {
             }
         }
         const selectedVideo = $(this).val();
+        console.log('videoSelect -> change -> selectedVideo', selectedVideo);
+        $('#videoUpload').val('');
         if (selectedVideo) {
             // Show loading indicator
             $('#metadataLoading').removeClass('d-none');
@@ -826,10 +849,10 @@ $(document).ready(function () {
     // Function to check if a video name already exists
     function checkVideoExists(filename) {
         return new Promise((resolve, reject) => {
-            $.get('/get_videos', function(videos) {
+            $.get('/get_videos', function (videos) {
                 const exists = videos.some(video => video.filename === filename);
                 resolve(exists);
-            }).fail(function(error) {
+            }).fail(function (error) {
                 console.error("Error checking video existence:", error);
                 reject(error);
             });
@@ -852,14 +875,14 @@ $(document).ready(function () {
                         videoFile = null;
                         return;
                     }
-                    
+
                     // If video doesn't exist, proceed with upload
                     const formData = new FormData();
                     formData.append('video', videoFile);
 
                     $('#uploadProgress').removeClass('d-none');
                     const progressBar = $('#uploadProgress .progress-bar');
-
+                    disableAllButtons();
                     $.ajax({
                         url: '/upload',
                         type: 'POST',
@@ -899,6 +922,7 @@ $(document).ready(function () {
 
                             // Refresh video select dropdown
                             populateVideoSelect();
+                            enableAllButtons();
                         },
                         error: function (error) {
                             console.error("Upload error:", error);
@@ -906,6 +930,7 @@ $(document).ready(function () {
                             $('#uploadProgress').addClass('d-none');
                             progressBar.css('width', '0%');
                             $('#metadataLoading').addClass('d-none');
+                            enableAllButtons();
                         }
                     });
                 })
@@ -914,6 +939,7 @@ $(document).ready(function () {
                     alert('Error checking if video already exists. Please try again.');
                 });
         }
+        $('#videoSelect').val('');
     });
 
     // Open modal to add event
@@ -1071,14 +1097,20 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(dataToSave),
-            success: function () {
+            success: function (response) {
                 originalAnnotations = JSON.parse(JSON.stringify(annotations)); // Update original annotations
                 hasUnsavedChanges = false;
                 updateUnsavedChangesStatus();
+                // check response of save_annotations
+                // if (response.error) {
+                //     alert(response.error);
+                // }
+                console.log('saveAnnotationsBtn >> response', response);
                 alert('Annotations saved successfully');
             },
-            error: function () {
-                alert('Error saving annotations');
+            error: function (error) {
+                console.log('error', error);
+                alert('saveAnnotationsBtn >> error: ' + error.responseJSON.error);
             }
         });
     });
@@ -1199,11 +1231,102 @@ $(document).ready(function () {
     }
 
     // Add window beforeunload event
-    window.addEventListener('beforeunload', function(e) {
+    window.addEventListener('beforeunload', function (e) {
         if (hasUnsavedChanges) {
             e.preventDefault();
             e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
             return e.returnValue;
         }
     });
+
+    // Function to disable all buttons and form controls
+    function disableAllButtons() {
+        console.log('Disabling all buttons and form controls');
+
+        // Store the current state of all buttons and inputs
+        window.buttonStates = {};
+
+        // Disable all buttons
+        $('button').each(function () {
+            const $btn = $(this);
+            window.buttonStates[this.id || this.className] = {
+                disabled: $btn.prop('disabled'),
+                pointerEvents: $btn.css('pointer-events')
+            };
+            $btn.prop('disabled', true);
+            $btn.css('pointer-events', 'none');
+        });
+
+        // Disable all inputs, selects, and textareas
+        $('input, select, textarea').each(function () {
+            const $input = $(this);
+            window.buttonStates[this.id || this.className] = {
+                disabled: $input.prop('disabled'),
+                pointerEvents: $input.css('pointer-events')
+            };
+            $input.prop('disabled', true);
+            $input.css('pointer-events', 'none');
+        });
+
+        // Add a class to the body to indicate UI is disabled
+        $('body').addClass('ui-disabled');
+
+        // Disable video player controls
+        // if (videoPlayer) {
+        //     videoPlayer.controls = false;
+        // }
+
+        // Disable modals
+        $('.modal').css('pointer-events', 'none');
+    }
+
+    // Function to enable all buttons and form controls
+    function enableAllButtons() {
+        console.log('Enabling all buttons and form controls');
+
+        // Restore the previous state of all buttons and inputs
+        if (window.buttonStates) {
+            // Restore buttons
+            $('button').each(function () {
+                const $btn = $(this);
+                const state = window.buttonStates[this.id || this.className];
+                if (state) {
+                    $btn.prop('disabled', state.disabled);
+                    $btn.css('pointer-events', state.pointerEvents);
+                } else {
+                    // If no state was stored, just enable
+                    $btn.prop('disabled', false);
+                    $btn.css('pointer-events', 'auto');
+                }
+            });
+
+            // Restore inputs, selects, and textareas
+            $('input, select, textarea').each(function () {
+                const $input = $(this);
+                const state = window.buttonStates[this.id || this.className];
+                if (state) {
+                    $input.prop('disabled', state.disabled);
+                    $input.css('pointer-events', state.pointerEvents);
+                } else {
+                    // If no state was stored, just enable
+                    $input.prop('disabled', false);
+                    $input.css('pointer-events', 'auto');
+                }
+            });
+        } else {
+            // If no state was stored, just enable everything
+            $('button, input, select, textarea').prop('disabled', false).css('pointer-events', 'auto');
+        }
+
+        // Remove the class from the body
+        $('body').removeClass('ui-disabled');
+
+        // Re-enable video player controls
+        // if (videoPlayer) {
+        //     videoPlayer.controls = true;
+        // }
+
+        // Re-enable modals
+        $('.modal').css('pointer-events', 'auto');
+    }
 });
