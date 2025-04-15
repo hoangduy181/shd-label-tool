@@ -225,7 +225,7 @@ $(document).ready(function () {
     function getFrameNumberFromTime(time) {
         try {
             if (!videoMetadata) return 0;
-            console.log("getFrameNumberFromTime -> time ", time);
+            // console.log("getFrameNumberFromTime -> time ", time);
             const frameNumber = Math.round(time * videoMetadata.fps);
             return Math.min(Math.max(0, frameNumber), videoMetadata.frame_count - 1);
         } catch (error) {
@@ -472,7 +472,7 @@ $(document).ready(function () {
         }
 
         // Handle video control shortcuts
-        if (!matchInfoModalOpened && !addEventModalOpened   ) {
+        if (!matchInfoModalOpened && !addEventModalOpened) {
             switch (e.key) {
                 case ' ':
                     e.preventDefault();
@@ -597,20 +597,7 @@ $(document).ready(function () {
             $('#metadataResolution').text(`${videoMetadata.width}x${videoMetadata.height}`);
             $('#metadataCurrentFrame').text(`Frame: ${currentFrame}`);
 
-            // Update match info if available
-            if (videoMetadata.matchInfo) {
-                matchInfo = videoMetadata.matchInfo;
-                updateMatchInfoForm();
-            } else {
-                matchInfo = {
-                    urlLocal: '',
-                    gameHomeTeam: '',
-                    gameAwayTeam: '',
-                    gameDate: '',
-                    gameScore: ''
-                };
-                updateMatchInfoForm();
-            }
+            
 
         } catch (error) {
             console.error("Error updateMetadataDisplay:", error);
@@ -619,6 +606,20 @@ $(document).ready(function () {
 
     // Function to update match info form
     function updateMatchInfoForm() {
+        // Update match info if available
+        if (videoMetadata.matchInfo) {
+            matchInfo = videoMetadata.matchInfo;
+            // updateMatchInfoForm();
+        } else {
+            matchInfo = {
+                urlLocal: '',
+                gameHomeTeam: '',
+                gameAwayTeam: '',
+                gameDate: '',
+                gameScore: ''
+            };
+            // updateMatchInfoForm();
+        }
         $('#urlLocal').val(matchInfo.urlLocal || videoFileName || '');
         $('#gameHomeTeam').val(matchInfo.gameHomeTeam || '');
         $('#gameAwayTeam').val(matchInfo.gameAwayTeam || '');

@@ -355,11 +355,18 @@ def add_seconds_to_events(file_path,filename):
 # save from FE to BE
 def _format_annotation(annotation: dict) -> dict:
     time = annotation["gameTime"].split(" - ")[1]
-    position = int(int(time[0:2])*60*1000) + int(int(time[3:5])*1000) + int(time[6:])
-    print(f"----------------> /upload -> _format_annotation -> time -> {int(time[0:2])*60*1000} ___ {int(time[3:5])*1000} ___ {int(time[6:])} => {position}")
+    # "gameTime": "1 - 07:06.240"
+    # position = int(int(time[0:2])*60*1000) + int(int(time[3:5])*1000) + int(time[6:])
+    minutes = time.split(":")[0]
+    seconds_and_miliseconds = time.split(":")[1]
+    seconds = seconds_and_miliseconds.split(".")[0]
+    miliseconds = seconds_and_miliseconds.split(".")[1]
+    position = int(minutes)*60*1000 + int(seconds)*1000 + int(miliseconds)
+    
+    print(f"----------------> /upload -> _format_annotation -> time -> {minutes} ___ {seconds} ___ {miliseconds} => {position}")
     return {
         "label": label_to_event[annotation["label"]],
-        "position": str(int(annotation["seconds"]*1000)),
+        "position": str(int(position)),
         "team": annotation["team"],
         "visibility": annotation["visibility"],
         "gameTime": annotation["gameTime"],
