@@ -170,10 +170,9 @@ $(document).ready(function () {
     // Populate video select dropdown with available videos
     function populateVideoSelect() {
         $.get('/get_videos', function (videos) {
-            const videoSelect = $('#videoSelect');
-            videoSelect.empty().append('<option value="">Choose a video...</option>');
-            videos.forEach(video => {
-                videoSelect.append(`<option value="${video.filename}">${video.filename}</option>`);
+            $('#videoSelect').empty().append('<option value="">Choose a video...</option>');
+            videos.forEach(function (video) {
+                $('#videoSelect').append(`<option value="${video.filename}">${video.display_name}</option>`);
             });
         });
     }
@@ -697,7 +696,7 @@ $(document).ready(function () {
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({
-                filename: videoFileName,
+                filename: videoFileName.split('/').pop(),
                 metadata: {
                     ...videoMetadata,
                     matchInfo: matchInfo
@@ -709,7 +708,7 @@ $(document).ready(function () {
 
                 // Update annotations with match info
                 const dataToSave = {
-                    filename: videoFileName,
+                    filename: videoFileName.split('/').pop(),
                     annotations: annotations.map(annotation => ({
                         ...annotation,
                         gameTime: convertSecondsToGameTime(annotation.seconds),
@@ -748,11 +747,12 @@ $(document).ready(function () {
         videoPlayer.load();
         console.log('✏️✏️✏️✏️✏️✏️ updateVideoSource -> filename', filename);
         videoFileName = filename;
+        console.log("🐧 > updateVideoSource > filename:", filename)
         // Show loading indicator
         $('#metadataLoading').removeClass('d-none');
 
         // Then get metadata and update UI
-        $.get(`/get_video_metadata/${filename.split('.')[0]}`, function (metadata) {
+        $.get(`/get_video_metadata/${(filename.split('.')[0]).split('/').pop()}`, function (metadata) {
             videoMetadata = metadata;
             currentFrame = 0;
             console.log("Video metadata loaded:", metadata);
@@ -809,16 +809,28 @@ $(document).ready(function () {
             }
         }
         const selectedVideo = $(this).val();
+        const selectedOption = $(this).find('option:selected');
+        const displayName = selectedOption.text();
+        
         console.log('videoSelect -> change -> selectedVideo', selectedVideo);
         $('#videoUpload').val('');
         if (selectedVideo) {
             // Show loading indicator
             $('#metadataLoading').removeClass('d-none');
 
-            $.get(`/select_video/${selectedVideo}`, function (response) {
+            $.get(`/select_video/${encodeURIComponent(displayName)}`, function (response) {
                 videoFile = selectedVideo;
                 console.log('videoFile', videoFile);
-                updateVideoSource(`/uploads/${response.filename}`, response.filename);
+                // Use the correct URL path from the response and pass filename
+                if (response.filename) {
+                    const videoUrl = `/uploads/${encodeURIComponent(response.filename)}`;
+                    updateVideoSource(videoUrl, response.filename);
+                } else {
+                    console.error('No filename in response');
+                    $('#metadataLoading').addClass('d-none');
+                    return;
+                }
+                
                 annotations = response.annotations?.annotations || [];
                 originalAnnotations = JSON.parse(JSON.stringify(annotations)); // Deep copy
                 hasUnsavedChanges = false;
@@ -827,23 +839,18 @@ $(document).ready(function () {
                     console.error("Annotations content:", annotations);
                     annotations = [];
                 }
-                console.log("annotation received ", annotations, currentFormat);
-                populateEventDropdowns(currentFormat);
                 updateEventList();
+                populateEventDropdowns(currentFormat);
                 updateShortcutsVisibility();
-                updateUnsavedChangesStatus();
+                // Hide loading indicator
+                $('#metadataLoading').addClass('d-none');
             }).fail(function (error) {
                 console.error("Error loading video:", error);
-                alert('Error loading video');
-                videoFile = null;
-                updateShortcutsVisibility();
-            }).always(function () {
-                // Hide loading indicator
+                alert('Failed to load video metadata');
                 $('#metadataLoading').addClass('d-none');
             });
         } else {
-            videoFile = null;
-            updateShortcutsVisibility();
+            hideAllElements();
         }
     });
 
@@ -902,7 +909,17 @@ $(document).ready(function () {
                         },
                         success: function (response) {
                             console.log('videoUpload -> success -> response', response);
-                            updateVideoSource(`/uploads/${response.filename}`, response.filename)
+                            if (response.filename) {
+                                const videoUrl = `/uploads/${encodeURIComponent(response.filename)}`;
+                                updateVideoSource(videoUrl, response.filename);
+                            } else {
+                                console.error('No filename in response');
+                                $('#uploadProgress').addClass('d-none');
+                                progressBar.css('width', '0%');
+                                enableAllButtons();
+                                return;
+                            }
+                            
                             //Update UI with video information
                             annotations = response.annotations?.annotations || [];
                             if (!Array.isArray(annotations)) {
@@ -1085,7 +1102,7 @@ $(document).ready(function () {
         }
 
         const dataToSave = {
-            filename: videoFileName,
+            filename: videoFileName.split('/').pop(),
             annotations: annotations.map(annotation => ({
                 ...annotation,
                 gameTime: convertSecondsToGameTime(annotation.seconds)

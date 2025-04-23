@@ -143,6 +143,22 @@ body {
     display: block;
 }
 
+/* Video container styling when loaded */
+.video-container {
+    position: relative;
+    width: 100%;
+}
+
+#videoPlayer {
+    width: 100%;
+    display: block;
+}
+
+/* Make sure video.js elements are visible */
+.video-js {
+    display: block !important;
+}
+
 /* Hide metadata card initially */
 #metadataCard {
     display: none;

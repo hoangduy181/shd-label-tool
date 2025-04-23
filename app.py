@@ -48,24 +48,51 @@ def index():
     print("----------------> / -> index")
     # Get list of available videos
     videos = []
-    for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-        if filename.endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')):
-            videos.append({
-                'filename': filename,
-                'path': f'/uploads/{filename}'
-            })
+    # Walk through all directories and subdirectories
+    for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER']):
+        for filename in files:
+            if filename.endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')):
+                # Get the relative path from UPLOAD_FOLDER
+                rel_path = os.path.relpath(root, app.config['UPLOAD_FOLDER'])
+                # If file is directly in UPLOAD_FOLDER, rel_path will be '.'
+                if rel_path == '.':
+                    path = f'/uploads/{filename}'
+                    display_name = filename
+                else:
+                    path = f'/uploads/{rel_path}/{filename}'
+                    display_name = f'{rel_path}/{filename}'
+                
+                videos.append({
+                    'filename': filename,
+                    'path': path,
+                    'display_name': display_name
+                })
     return render_template('index.html', videos=videos)
 
 @app.route('/get_videos')
 def get_videos():
-    """Get list of available videos"""
+    """Get list of available videos including those in subfolders"""
     videos = []
-    for filename in os.listdir(app.config['UPLOAD_FOLDER']):
-        if filename.endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')):
-            videos.append({
-                'filename': filename,
-                'path': f'/uploads/{filename}'
-            })
+    
+    # Walk through all directories and subdirectories
+    for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER']):
+        for filename in files:
+            if filename.endswith(('.mp4', '.webm', '.avi', '.mov', '.mkv')):
+                # Get the relative path from UPLOAD_FOLDER
+                rel_path = os.path.relpath(root, app.config['UPLOAD_FOLDER'])
+                # If file is directly in UPLOAD_FOLDER, rel_path will be '.'
+                if rel_path == '.':
+                    path = f'/uploads/{filename}'
+                    display_name = filename
+                else:
+                    path = f'/uploads/{rel_path}/{filename}'
+                    display_name = f'{rel_path}/{filename}'
+                
+                videos.append({
+                    'filename': filename,
+                    'path': path,
+                    'display_name': display_name
+                })
     return jsonify(videos)
 
 def _format_annotation_for_webapp(annotation: dict) -> dict:
@@ -79,16 +106,25 @@ def _format_annotation_for_webapp(annotation: dict) -> dict:
         "seconds": int(annotation["position"])/1000
     }
 
-@app.route('/select_video/<filename>')
+@app.route('/select_video/<path:filename>')
 def select_video(filename):
     """Handle video selection from available videos"""
-    video_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    print("----------------> /select_video -> select_video -> " + video_path)
+    # Check if the file is in a subdirectory
+    if '/' in filename:
+        # Extract the actual filename and directory path
+        file_path = filename
+        video_name = os.path.splitext(os.path.basename(filename))[0]
+    else:
+        file_path = filename
+        video_name = os.path.splitext(filename)[0]
+        
+    video_path = os.path.join(app.config['UPLOAD_FOLDER'], file_path)
+    print(f"----------------> /select_video -> select_video -> {video_path}")
+    
     if not os.path.exists(video_path):
         return jsonify({'error': 'Video not found'}), 404
 
     # Check if metadata exists
-    video_name = os.path.splitext(filename)[0]
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
     
     if not os.path.exists(metadata_path):
@@ -125,9 +161,9 @@ def select_video(filename):
     global ind
     index = add_seconds_to_events(annotation_path, video_name)
     ind = index
-    print("----------------> /select_video -> select_video -> annotations -> " + str(annotations))
+    print(f"----------------> /select_video -> select_video -> annotations -> {str(annotations)}")
     return jsonify({
-        'filename': filename,
+        'filename': file_path,
         'duration': metadata['duration'],
         'fps': metadata['fps'],
         'frame_count': metadata['frame_count'],
@@ -460,9 +496,9 @@ def save_annotations():
     return jsonify({'message': 'Annotations saved successfully'})
 
 # Hàm này tạo một endpoint cho phép truy cập các file video đã tải lên, cho phép client (trình duyệt hoặc frontend) có thể trực tiếp phát các video.
-@app.route('/uploads/<filename>')
+@app.route('/uploads/<path:filename>')
 def uploaded_file(filename):
-    print("----------------> /uploads/<filename> -> uploaded_file") 
+    print(f"----------------> /uploads/{filename} -> uploaded_file") 
     # send_from_directory(): Một hàm tiện ích của Flask để phục vụ file tĩnh từ một thư mục cụ thể
     # app.config['UPLOAD_FOLDER']: Đường dẫn đến thư mục lưu trữ các file đã tải lên (đã được cấu hình là "uploads")
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
@@ -510,7 +546,17 @@ def get_video_metadata(video_name):
     if os.path.exists(metadata_path):
         with open(metadata_path, 'r') as f:
             return jsonify(json.load(f))
-    return jsonify({'error': 'Metadata not found'}), 404
+    # create a new metadata file
+    metadata = { 
+        "gameHomeTeam": "",
+        "gameAwayTeam": "",
+        "gameDate": "",
+        "gameScore": "",
+        "UrlLocal": "",
+        "UrlYoutube": "",
+        "annotations": []
+    }
+    return jsonify(metadata)
 
 @app.route('/save_metadata', methods=['POST'])
 def save_metadata():
