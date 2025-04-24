@@ -100,8 +100,8 @@ def _format_annotation_for_webapp(annotation: dict) -> dict:
     return {
         "label": reversed_label_to_event.get(annotation.get("label")),
         # "position": annotation["position"],
-        "team": annotation["team"],
-        "visibility": annotation["visibility"],
+        "team": annotation.get("team", "home"),
+        "visibility": annotation.get("visibility", "visible"),
         # "gameTime": annotation["gameTime"],
         "seconds": int(annotation["position"])/1000
     }
@@ -403,9 +403,9 @@ def _format_annotation(annotation: dict) -> dict:
     return {
         "label": label_to_event[annotation["label"]],
         "position": str(int(position)),
-        "team": annotation["team"],
-        "visibility": annotation["visibility"],
-        "gameTime": annotation["gameTime"],
+        "team": annotation.get("team", ""),
+        "visibility": annotation.get("visibility", ""),
+        "gameTime": annotation.get("gameTime", ""),
         # "seconds": annotation["seconds"]
     }
 

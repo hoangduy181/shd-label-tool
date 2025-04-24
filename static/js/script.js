@@ -832,6 +832,12 @@ $(document).ready(function () {
                 }
                 
                 annotations = response.annotations?.annotations || [];
+                annotations = annotations.map(annotation => ({
+                    ...annotation,
+                    team: annotation.team || 'home',
+                    visibility: annotation.visibility || 'visible'
+                    // gameTime: annotation.gameTime || ''
+                }));
                 originalAnnotations = JSON.parse(JSON.stringify(annotations)); // Deep copy
                 hasUnsavedChanges = false;
                 if (!Array.isArray(annotations)) {
