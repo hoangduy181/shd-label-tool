@@ -8,7 +8,7 @@ import numpy as np
 
 # Khởi tạo ứng dụng Flask và cấu hình các thư mục để lưu trữ video được tải lên và các chú thích
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER'] = '/data02/ftphl'
 app.config['ANNOTATIONS_FOLDER'] = 'annotations'
 app.config['METADATA_FOLDER'] = 'metadata'
 
