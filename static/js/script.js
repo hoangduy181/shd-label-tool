@@ -172,7 +172,7 @@ $(document).ready(function () {
         $.get('/get_videos', function (videos) {
             $('#videoSelect').empty().append('<option value="">Choose a video...</option>');
             videos.forEach(function (video) {
-                $('#videoSelect').append(`<option value="${video.filename}">${video.display_name}</option>`);
+                $('#videoSelect').append(`<option value="${video.filename}">${video.filename}</option>`);
             });
         });
     }

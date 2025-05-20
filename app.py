@@ -90,6 +90,7 @@ def select_video(filename):
 
     # Check if metadata exists
     video_name = os.path.splitext(filename)[0]
+    print("----------------> /select_video -> select_video -> video_name -> " + video_name)
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
     
     if not os.path.exists(metadata_path):
@@ -405,8 +406,8 @@ def save_annotations():
     # Tạo đường dẫn đến file chú thích dựa trên tên file video
     #
     
-    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{'.'.join(filename.split(".")[:-1])}.json')
-
+    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{filename}.json')
+    print("----------------> /save_annotations -> save_annotations -> annotation_path -> " + annotation_path)
     
     # Kiểm tra xem file chú thích đã tồn tại chưa
     if os.path.exists(annotation_path):
