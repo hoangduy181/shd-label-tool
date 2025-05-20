@@ -111,11 +111,15 @@ def _format_annotation_for_webapp(annotation: dict) -> dict:
 def select_video(filename):
     """Handle video selection from available videos"""
     # Check if the file is in a subdirectory
+    filename = urllib.parse.unquote(filename)
+    print("----------------> /select_video -> select_video -> filename -> " + filename)
     if '/' in filename:
         # Extract the actual filename and directory path
+        print("----------------> /select_video -> select_video -> case 1")
         file_path = filename
         video_name = os.path.splitext(os.path.basename(filename))[0]
     else:
+        print("----------------> /select_video -> select_video -> case 2")
         file_path = filename
         video_name = os.path.splitext(filename)[0]
     print("----------------> /select_video -> select_video -> video_name -> " + video_name)
@@ -126,8 +130,6 @@ def select_video(filename):
         return jsonify({'error': 'Video not found'}), 404
 
     # Check if metadata exists
-    video_name = os.path.splitext(filename)[0]
-    print("----------------> /select_video -> select_video -> video_name -> " + video_name)
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
     print("----------------> /select_video -> select_video -> metadata_path -> " + metadata_path)
     if not os.path.exists(metadata_path):

@@ -761,8 +761,9 @@ $(document).ready(function () {
         // Show loading indicator
         $('#metadataLoading').removeClass('d-none');
 
+        
         // Then get metadata and update UI
-        $.get(`/get_video_metadata/${(filename.split('.')[0]).split('/').pop()}`, function (metadata) {
+        $.get(`/get_video_metadata/${processVideoNameMultipleDot(filename).split('/').pop()}`, function (metadata) {
             videoMetadata = metadata;
             currentFrame = 0;
             console.log("Video metadata loaded:", metadata);
