@@ -820,7 +820,7 @@ $(document).ready(function () {
         }
         const selectedVideo = $(this).val();
         const selectedOption = $(this).find('option:selected');
-        const displayName = selectedOption.text();
+        const displayName = selectedOption.value();
         
         console.log('videoSelect -> change -> selectedVideo', selectedVideo);
         $('#videoUpload').val('');

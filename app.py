@@ -118,7 +118,7 @@ def select_video(filename):
     else:
         file_path = filename
         video_name = os.path.splitext(filename)[0]
-        
+    print("----------------> /select_video -> select_video -> video_name -> " + video_name)
     video_path = os.path.join(app.config['UPLOAD_FOLDER'], file_path)
     print(f"----------------> /select_video -> select_video -> {video_path}")
     
@@ -129,7 +129,7 @@ def select_video(filename):
     video_name = os.path.splitext(filename)[0]
     print("----------------> /select_video -> select_video -> video_name -> " + video_name)
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
-    
+    print("----------------> /select_video -> select_video -> metadata_path -> " + metadata_path)
     if not os.path.exists(metadata_path):
         # Create metadata if it doesn't exist
         metadata = extract_video_metadata(video_path)
@@ -142,7 +142,7 @@ def select_video(filename):
 
     # Get annotations
     annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{video_name}.json')
-    
+    print("----------------> /select_video -> select_video -> annotation_path -> " + annotation_path)
     if os.path.exists(annotation_path):
         with open(annotation_path, 'r') as f:
             # load annotations từ BE lên FE
