@@ -172,7 +172,7 @@ $(document).ready(function () {
         $.get('/get_videos', function (videos) {
             $('#videoSelect').empty().append('<option value="">Choose a video...</option>');
             videos.forEach(function (video) {
-                $('#videoSelect').append(`<option value="${video.filename}">${video.display_name}</option>`);
+                $('#videoSelect').append(`<option value="${video.filename}">${video.filename}</option>`);
             });
         });
     }
@@ -739,6 +739,16 @@ $(document).ready(function () {
             }
         });
     });
+
+    function processVideoNameMultipleDot(filename) {
+        let nameParts = filename.split('.');
+        console.log(nameParts.length);
+        nameParts.splice(nameParts.length - 1, 1);
+        console.log(nameParts);
+        newName = nameParts.join('.');
+        console.log(newName);
+        return newName;
+    }
 
     // Function to update video source and controls when video is loaded/selected
     function updateVideoSource(src, filename) {

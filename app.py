@@ -5,6 +5,7 @@ import re
 import json
 from datetime import datetime
 import numpy as np
+import urllib.parse
 
 # Khởi tạo ứng dụng Flask và cấu hình các thư mục để lưu trữ video được tải lên và các chú thích
 app = Flask(__name__)
@@ -125,6 +126,8 @@ def select_video(filename):
         return jsonify({'error': 'Video not found'}), 404
 
     # Check if metadata exists
+    video_name = os.path.splitext(filename)[0]
+    print("----------------> /select_video -> select_video -> video_name -> " + video_name)
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
     
     if not os.path.exists(metadata_path):
@@ -174,6 +177,7 @@ def extract_video_metadata(video_path):
     """Extract video metadata and frames using OpenCV"""
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
+        print("----------------> /select_video -> extract_video_metadata -> cap.isOpened() -> not opened", video_path)
         return None
 
     # Get video properties
@@ -230,7 +234,7 @@ def upload_video():
         return jsonify({'error': 'Failed to process video'}), 500
 
     # Get annotations
-    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{video_file.filename.split(".")[0]}.json')
+    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{".".join(video_file.filename.split(".")[:-1])}.json')
 
     if os.path.exists(annotation_path):
         with open(annotation_path, 'r') as f:
@@ -255,7 +259,7 @@ def upload_video():
     global ind
 
     # Gọi hàm add_seconds_to_events() để thêm trường "seconds" vào các chú thích (Truyền vào đường dẫn file chú thích và tên file video (không có phần mở rộng))
-    index=add_seconds_to_events(annotation_path,video_file.filename.split(".")[0])
+    index=add_seconds_to_events(annotation_path, '.'.join(video_file.filename.split(".")[:-1]))
 
     # Lưu chỉ số vào biến toàn cục ind
 
@@ -336,7 +340,8 @@ def add_seconds_to_events(file_path,filename):
         for idx,video in enumerate(data["videos"]):
             print("----------------> /upload -> add_seconds_to_events -> version and videos -> for")
             # Trích xuất tên file từ đường dẫn của video
-            vid_name=video['path'].split("/")[-1].split(".")[0]
+            vid_name=video['path'].split("/")[-1].split(".")[:-1]
+            vid_name = '.'.join(vid_name)
             
             # Kiểm tra xem tên file có khớp với tham số filename không
             if filename==vid_name:
@@ -425,6 +430,7 @@ def save_annotations():
 
     # Trích xuất trường "filename" từ dữ liệu JSON, sử dụng phương thức get() để tránh lỗi nếu trường không tồn tại
     filename = data.get('filename')  
+    filename = '.'.join(filename.split(".")[:-1])
     annotations = data.get('annotations')
     print("----------------> /save_annotations -> save_annotations -> " + str(filename) + " & " + str(annotations))
 
@@ -435,8 +441,10 @@ def save_annotations():
 
 
     # Tạo đường dẫn đến file chú thích dựa trên tên file video
-    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{filename.split(".")[0]}.json')
-
+    #
+    
+    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{filename}.json')
+    print("----------------> /save_annotations -> save_annotations -> annotation_path -> " + annotation_path)
     
     # Kiểm tra xem file chú thích đã tồn tại chưa
     if os.path.exists(annotation_path):
@@ -461,7 +469,11 @@ def save_annotations():
             "annotations": []
         }
     # Tìm match metadata của trận và lưu vào các mục của file chú thích
-    metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{filename.split(".")[0]}.json')
+    metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{filename}.json')
+    if not os.path.exists(metadata_path):
+        print("----------------> /save_annotations -> save_annotations -> metadata_path -> not found")
+        return jsonify({'error': 'Metadata not found: ' + metadata_path}), 400
+    
     with open(metadata_path, 'r') as f:
         metadata = json.load(f)
         matchInfoLoaded = metadata.get("matchInfo", None)
@@ -508,7 +520,7 @@ def uploaded_file(filename):
 def get_annotations(filename):
     print("----------------> /get_annotations/<filename> -> get_annotations") 
     # app.config['ANNOTATIONS_FOLDER']: Đường dẫn đến thư mục lưu trữ chú thích (đã cấu hình là "annotations")
-    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{filename.split(".")[0]}.json')
+    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{'.'.join(filename.split(".")[:-1])}.json')
 
     # Kiểm tra xem file chú thích có tồn tại không
     if os.path.exists(annotation_path):
@@ -542,6 +554,8 @@ def get_frame(video_name, frame_number):
 @app.route('/get_video_metadata/<video_name>')
 def get_video_metadata(video_name):
     """Get metadata for a specific video"""
+    # decodeURIComponent(video_name)
+    video_name = urllib.parse.unquote(video_name)
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
     if os.path.exists(metadata_path):
         with open(metadata_path, 'r') as f:
