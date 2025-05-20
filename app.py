@@ -138,6 +138,7 @@ def extract_video_metadata(video_path):
     """Extract video metadata and frames using OpenCV"""
     cap = cv2.VideoCapture(video_path)
     if not cap.isOpened():
+        print("----------------> /select_video -> extract_video_metadata -> cap.isOpened() -> not opened", video_path)
         return None
 
     # Get video properties
