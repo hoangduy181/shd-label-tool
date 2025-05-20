@@ -483,7 +483,7 @@ def uploaded_file(filename):
 def get_annotations(filename):
     print("----------------> /get_annotations/<filename> -> get_annotations") 
     # app.config['ANNOTATIONS_FOLDER']: Đường dẫn đến thư mục lưu trữ chú thích (đã cấu hình là "annotations")
-    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{'.'.join(filename.split(".")[:-1])}.json')
+    annotation_path = os.path.join(app.config['ANNOTATIONS_FOLDER'], f'{".".join(filename.split(".")[:-1])}.json')
 
     # Kiểm tra xem file chú thích có tồn tại không
     if os.path.exists(annotation_path):
