@@ -392,6 +392,7 @@ def save_annotations():
 
     # Trích xuất trường "filename" từ dữ liệu JSON, sử dụng phương thức get() để tránh lỗi nếu trường không tồn tại
     filename = data.get('filename')  
+    filename = '.'.join(filename.split(".")[:-1])
     annotations = data.get('annotations')
     print("----------------> /save_annotations -> save_annotations -> " + str(filename) + " & " + str(annotations))
 
@@ -430,7 +431,11 @@ def save_annotations():
             "annotations": []
         }
     # Tìm match metadata của trận và lưu vào các mục của file chú thích
-    metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{".".join(filename.split(".")[:-1])}.json')
+    metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{filename}.json')
+    if not os.path.exists(metadata_path):
+        print("----------------> /save_annotations -> save_annotations -> metadata_path -> not found")
+        return jsonify({'error': 'Metadata not found: ' + metadata_path}), 400
+    
     with open(metadata_path, 'r') as f:
         metadata = json.load(f)
         matchInfoLoaded = metadata.get("matchInfo", None)
