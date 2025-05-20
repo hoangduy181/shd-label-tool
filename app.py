@@ -5,6 +5,7 @@ import re
 import json
 from datetime import datetime
 import numpy as np
+import urllib.parse
 
 # Khởi tạo ứng dụng Flask và cấu hình các thư mục để lưu trữ video được tải lên và các chú thích
 app = Flask(__name__)
@@ -507,6 +508,8 @@ def get_frame(video_name, frame_number):
 @app.route('/get_video_metadata/<video_name>')
 def get_video_metadata(video_name):
     """Get metadata for a specific video"""
+    # decodeURIComponent(video_name)
+    video_name = urllib.parse.unquote(video_name)
     metadata_path = os.path.join(app.config['METADATA_FOLDER'], f'{video_name}.json')
     if os.path.exists(metadata_path):
         with open(metadata_path, 'r') as f:
