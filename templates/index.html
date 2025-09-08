@@ -1,20 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<!-- 
+=============================================================================
+FOOTBALL VIDEO ANNOTATION TOOL - HTML TEMPLATE
+=============================================================================
+This template contains the main UI components for the football video annotation tool:
+
+1. Video Selection Card - Upload and select videos
+2. Video Player Container - Custom HTML5 player with frame-accurate controls
+3. Video Metadata Card - Display video technical information
+4. Events List Card - Manage and filter annotations
+5. Event Shortcuts Panel - Quick access buttons with keyboard shortcuts
+6. Add/Edit Event Modal - Create and edit annotations
+7. Match Information Modal - Manage match details
+
+Technology Stack:
+- Bootstrap 5 for responsive UI
+- jQuery for DOM manipulation
+- Custom CSS for styling
+- Bootstrap Icons for UI icons
+=============================================================================
+-->
+
 <head>
+    <!-- HTML Document Metadata -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Football Event Annotation Tool">
     <link rel="icon" href="{{ url_for('static', filename='shoot.png') }}" type="image/x-icon">
     <title>Football Event Annotation Tool</title>
+    
+    <!-- External CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <!-- 
+    =============================================================================
+    INLINE CSS STYLES
+    =============================================================================
+    Custom styles for the football video annotation tool components
+    =============================================================================
+    -->
     <style>
+        /* Main container styling */
         .container-fluid {
             padding: 1rem;
         }
 
+        /* Event shortcut buttons styling */
         .action-btn {
             font-size: 0.9rem;
             padding: 0.3rem 0.5rem;
@@ -26,7 +60,7 @@
             transition: all 0.3s ease;
         }
 
-        /* Color utility classes */
+        /* Color utility classes for dynamic text colors */
         .text-light-hover:hover {
             color: white !important;
         }
@@ -35,11 +69,12 @@
             color: black !important;
         }
 
+        /* Event list item styling */
         .event-item {
             border-left: 4px solid transparent;
         }
 
-        /* Button colors with dynamic text colors */
+        /* Event shortcut button colors - Each football event has a unique color */
         .action-btn[data-action="Ball out of play"] {
             background-color: #FF5733;
         }
@@ -84,7 +119,7 @@
             background-color: #FF9933;
         }
 
-        /* Video control button styles with dynamic text colors */
+        /* Video player control button styles with dynamic text colors */
         #seekBack5s {
             background-color: #4361ee;
             border-color: #4361ee;
@@ -135,6 +170,7 @@
             border-color: #3046c9;
         }
 
+        /* Video Selection Card Styling */
         .video-selection-card .card-header {
             background-color: #f8f9fa;
             border-bottom: 1px solid rgba(0, 0, 0, 0.1);
@@ -184,8 +220,16 @@
             transition: width 0.2s ease;
         }
     </style>
+    
+    <!-- 
+    =============================================================================
+    INLINE JAVASCRIPT FUNCTIONS
+    =============================================================================
+    Color utility functions for dynamic button text color adjustment
+    =============================================================================
+    -->
     <script>
-        // Function to determine if a color is light or dark
+        // Function to determine if a color is light or dark for text contrast
         function isLightColor(color) {
             // Convert hex to RGB
             let hex = color.replace('#', '');
@@ -198,7 +242,7 @@
             return luminance > 0.5;
         }
 
-        // Function to set appropriate text colors
+        // Function to set appropriate text colors for better contrast
         function setButtonTextColors() {
             document.querySelectorAll('.action-btn, #seekBack5s, #seekBackFrame, #playPauseBtn, #seekForwardFrame, #seekForward5s').forEach(button => {
                 let bgColor;
@@ -227,25 +271,52 @@
             });
         }
 
-        // Call when DOM is loaded
+        // Call when DOM is loaded to set proper text colors
         document.addEventListener('DOMContentLoaded', setButtonTextColors);
     </script>
 </head>
 
 <body>
+    <!-- 
+    =============================================================================
+    MAIN APPLICATION BODY
+    =============================================================================
+    Contains all UI components organized in a responsive Bootstrap grid layout
+    =============================================================================
+    -->
     <div class="container-fluid">
-        <!-- <h1 class="text-center mb-4">Football Event Annotation Tool</h1> -->
         <div class="row">
-            <!-- Left Column: Video Uploader and Player -->
+            <!-- 
+            =============================================================================
+            LEFT COLUMN: VIDEO SELECTION AND PLAYER SECTION
+            =============================================================================
+            Contains:
+            1. Video Selection Card (Component #1)
+            2. Video Player Container (Component #2)
+            =============================================================================
+            -->
             <div class="col-md-12" id="videoColumn">
-                <!-- Video Selection Card -->
+                <!-- Application Title (hidden when video is loaded) -->
                 <h1 id="modalTitle"> Soccer Event Labeling Tool</h1>
+                <!-- 
+                =============================================================================
+                COMPONENT #1: VIDEO SELECTION CARD
+                =============================================================================
+                Purpose: Upload and select videos
+                Features:
+                - Dropdown to select from available videos
+                - File upload input for new videos  
+                - Progress bar for upload status
+                - Responsive design that adapts when video is loaded
+                =============================================================================
+                -->
                 <div class="card mb-3 video-selection-card">
                     <div class="card-header">
                         <h5 class="mb-0">Video Selection</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
+                            <!-- Video Selection Dropdown -->
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Select from Available Videos</label>
@@ -254,6 +325,7 @@
                                     </select>
                                 </div>
                             </div>
+                            <!-- Video Upload Input -->
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label class="form-label">Or Upload New Video</label>
@@ -264,50 +336,109 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Upload Progress Bar -->
                         <div id="uploadProgress" class="progress d-none">
                             <div class="progress-bar" role="progressbar" style="width: 0%"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Video Player -->
+                <!-- 
+                =============================================================================
+                COMPONENT #2: VIDEO PLAYER CONTAINER
+                =============================================================================
+                Purpose: Custom HTML5 player with frame-accurate controls
+                Features:
+                - HTML5 video player with custom controls
+                - Play/pause, frame navigation, speed control
+                - Custom seek bar with annotation markers  
+                - Volume control
+                - Current frame display
+                - Keyboard shortcuts support
+                =============================================================================
+                -->
                 <div class="card mb-3 video-container-card" id="videoContainerCard">
-                    <div class="card-body">
-                        <div id="videoContainer">
+                    <div class="card-body" id="videoContainer">
+                        <div id="videoContainerSmall">
+                            <!-- HTML5 Video Player -->
                             <video id="videoPlayer" class="w-100" style="pointer-events: none;" preload="auto"></video>
+                            
+                            <!-- Custom Video Controls -->
                             <div class="video-controls mt-2">
                                 <div class="d-flex align-items-center gap-2">
+                                    <!-- Playback Control Buttons -->
                                     <div class="d-flex gap-2">
                                         <button id="seekBack5s" class="btn btn-outline-primary">
                                             <i class="bi bi-skip-backward-fill"></i> 5s
                                         </button>
                                         <button id="seekBackFrame" class="btn btn-outline-primary">
-                                            <i class="bi skip-backward"></i> 1 frame
+                                            <i class="bi skip-backward"></i> 1s
                                         </button>
                                         <button id="playPauseBtn" class="btn btn-primary">
                                             <i class="bi bi-play-fill"></i>
                                         </button>
                                         <button id="seekForwardFrame" class="btn btn-outline-primary">
-                                            <i class="bi skip-forward"></i> 1 frame
+                                            <i class="bi skip-forward"></i> 1s
                                         </button>
                                         <button id="seekForward5s" class="btn btn-outline-primary">
                                             <i class="bi bi-skip-forward-fill"></i> 5s
                                         </button>
                                     </div>
-                                    <div class="d-flex align-items-center flex-grow-1">
+                                    <!-- Video Position Control Seek Bar -->
+                                    <div class="d-flex align-items-center flex-grow-1 mb-2" id="videoPositionControlSeekBar">
                                         <span id="currentTime" class="me-2">00:00</span>
-                                        <div id="seekBar" class="seek-bar flex-grow-1">
-                                            <div id="seekBarMarkers" class="seek-bar-progress"></div>
+                                        <div id="videoSeekBar" class="seek-bar flex-grow-1">
+                                            <div id="videoSeekBarProgress" class="seek-bar-progress"></div>
                                         </div>
-                                        <span id="duration" class="ms-2">00:00</span>
+                                        <span id="videoDuration" class="ms-2">00:00</span>
+                                    </div>
+                                    
+                                    <!-- Event Time Editing Seek Bar (hidden by default) -->
+                                    <div id="eventEditingSection" class="d-flex align-items-center flex-grow-1" style="display: none;">
+                                        <span class="me-2 text-muted small">Event Edit:</span>
+                                        <div class="flex-grow-1">
+                                            <div id="eventEditSeekBar" class="seek-bar event-edit-seekbar">
+                                                <!-- Event Duration Highlight -->
+                                                <div id="eventDurationHighlight" class="event-duration-highlight" style="display: none;"></div>
+                                                
+                                                <!-- Timeline Markers -->
+                                                <div id="startMarker" class="timeline-marker timeline-marker-start" style="display: none;" data-marker="start">
+                                                    <div class="marker-time-display" id="startMarkerTime">00:00</div>
+                                                </div>
+                                                <div id="endMarker" class="timeline-marker timeline-marker-end" style="display: none;" data-marker="end">
+                                                    <div class="marker-time-display" id="endMarkerTime">00:00</div>
+                                                </div>
+                                                
+                                                <!-- Time Cursor -->
+                                                <div id="timeCursor" class="timeline-cursor" style="display: none;"></div>
+                                            </div>
+                                            <div class="timeline-labels">
+                                                <span id="timelineStart">00:00</span>
+                                                <span id="timelineEnd">00:00</span>
+                                            </div>
+                                            
+                                            <!-- Pointer Control Instructions -->
+                                            <!-- <div id="pointerControls" class="pointer-controls mt-2">
+                                                <div class="text-center">
+                                                    <small class="text-muted">
+                                                        Click on <span class="text-success">🟢 Start</span> or <span class="text-danger">🔴 End</span> pointer to select it, then use video controls to adjust <span id="activePointerText" class="text-success fw-bold">Start Time</span>
+                                                    </small>
+                                                </div>
+                                            </div> -->
+                                        </div>
+                                        <!-- <span class="ms-2 text-muted small">Timeline</span> -->
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <!-- controls -->
+                        
+                        <!-- Additional Controls and Settings -->
                         <div class="mt-3">
+                            <!-- Primary Action Buttons -->
                             <button id="addEventBtn" class="btn btn-primary">Add Event (Enter)</button>
                             <button id="saveAnnotationsBtn" class="btn btn-success">Save Annotations (Ctrl + S)</button>
+                            
+                            <!-- Playback Settings -->
                             <div class="d-inline-block ms-3">
                                 <label for="playbackSpeed" class="form-label d-inline">Playback Speed</label>
                                 <select id="playbackSpeed" class="form-select d-inline-block" style="width: auto;">
@@ -322,6 +453,8 @@
                                 <input type="range" id="volumeControl" min="0" max="1" step="0.1" value="1"
                                     style="width: 100px;">
                             </div>
+                            
+                            <!-- Current Frame Display -->
                             <div class="btn btn-outline-primary float-end disabled">
                                 <span id="metadataCurrentFrame">-</span>
                             </div>
@@ -330,18 +463,38 @@
                 </div>
             </div>
 
-            <!-- Middle Column: Video Metadata and Event Filter -->
+            <!-- 
+            =============================================================================
+            MIDDLE COLUMN: VIDEO METADATA AND EVENTS MANAGEMENT SECTION
+            =============================================================================
+            Contains:
+            3. Video Metadata Card (Component #3)
+            4. Events List Card (Component #4)
+            =============================================================================
+            -->
             <div class="col-md-3">
-                <!-- Video Metadata Card -->
+                <!-- 
+                =============================================================================
+                COMPONENT #3: VIDEO METADATA CARD
+                =============================================================================
+                Purpose: Display video technical information
+                Features:
+                - Displays video metadata (duration, FPS, frame count, resolution)
+                - Edit match information button
+                - Loading indicator
+                - Dynamic updates based on selected video
+                =============================================================================
+                -->
                 <div class="card mb-3 video-metadata-card" id="metadataCard">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">Video Metadata: <span id="videoFileName">-</span></h5>
+                        <!-- Loading Spinner -->
                         <div id="metadataLoading" class="spinner-border spinner-border-sm d-none" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <!-- Video Metadata Card Body -->
                     <div class="card-body">
+                        <!-- Video Technical Information -->
                         <div class="row">
                             <div class="col-6">
                                 <div class="mb-2">
@@ -360,6 +513,7 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Match Information Edit Button -->
                         <div class="mt-2">
                             <button id="editMatchInfoBtn" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-pencil"></i> Edit Match Info
@@ -368,25 +522,58 @@
                     </div>
                 </div>
 
-                <!-- Events List Card -->
+                <!-- 
+                =============================================================================
+                COMPONENT #4: EVENTS LIST CARD
+                =============================================================================
+                Purpose: Manage and filter annotations
+                Features:
+                - Filterable list of annotations
+                - Event filter dropdown
+                - Scrollable event list with edit/delete actions
+                - Click-to-seek functionality
+                - Real-time updates when annotations change
+                =============================================================================
+                -->
                 <div class="card video-event-list-card" id="eventListCard">
                     <div class="card-header">
                         <h5 class="mb-0">Events</h5>
                     </div>
                     <div class="card-body">
+                        <!-- Event Type Filter -->
                         <div class="mb-3">
-                            <!-- <label for="eventFilter" class="form-label">Filter by Event Type</label> -->
                             <select id="eventFilter" class="form-select">
                                 <option value="all">All Events</option>
                             </select>
                         </div>
+                        <!-- Dynamic Event List (populated by JavaScript) -->
                         <ul id="eventList" class="list-group"></ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Event Shortcuts -->
+            <!-- 
+            =============================================================================
+            RIGHT COLUMN: EVENT SHORTCUTS SECTION
+            =============================================================================
+            Contains:
+            5. Event Shortcuts Panel (Component #5)
+            =============================================================================
+            -->
             <div class="col-md-2">
+                <!-- 
+                =============================================================================
+                COMPONENT #5: EVENT SHORTCUTS PANEL
+                =============================================================================
+                Purpose: Quick access buttons with keyboard shortcuts
+                Features:
+                - Quick access buttons for common football events
+                - Keyboard shortcuts (0-9, D, V, Y, G, P, R, X)
+                - Color-coded event types
+                - Auto-hide when no video is loaded
+                - 17 different football event types supported
+                =============================================================================
+                -->
                 <div class="card video-event-shortcuts-card ">
                     <div class="card-header">
                         <h5 class="mb-0">Event Shortcuts</h5>
@@ -396,14 +583,15 @@
                             <button class="btn action-btn button" id="es-boop" data-action="ball_out_of_play">Ball out of play (0)</button>
                             <button class="btn action-btn button" id="es-throw_in" data-action="throw_in">Throw-in (1)</button>
                             <button class="btn action-btn button" id="es-foul" data-action="foul">Foul (2)</button>
-                            <button class="btn action-btn button" id="es-indirect_free_kick" data-action="indirect_free_kick">Indirect free-kick
-                                (3)</button>
+                            <button class="btn action-btn button" id="es-indirect_free_kick" data-action="indirect_free_kick">Indirect free-kick (3)</button>
                             <button class="btn action-btn button" id="es-clearance" data-action="clearance">Clearance (4)</button>
                             <button class="btn action-btn button" id="es-shots_on_target" data-action="shots_on_target">Shots on target (5)</button>
                             <button class="btn action-btn button" id="es-shots_off_target" data-action="shots_off_target">Shots off target (6)</button>
                             <button class="btn action-btn button" id="es-corner" data-action="corner">Corner (7)</button>
                             <button class="btn action-btn button" id="es-substitution" data-action="substitution">Substitution (8)</button>
                             <button class="btn action-btn button" id="es-kick_off" data-action="kick_off">Kick-off (9)</button>
+                            
+
                             <button class="btn action-btn button" id="es-direct_free_kick" data-action="direct_free_kick">Direct free-kick (D)</button>
                             <button class="btn action-btn button" id="es-offside" data-action="offside">Offside (V)</button>
                             <button class="btn action-btn button" id="es-yellow_card" data-action="yellow_card">Yellow card (Y)</button>
@@ -418,7 +606,21 @@
         </div>
     </div>
 
-    <!-- Modal for adding/editing events -->
+    <!-- 
+    =============================================================================
+    COMPONENT #6: ADD/EDIT EVENT MODAL
+    =============================================================================
+    Purpose: Create and edit annotations
+    Features:
+    - Form for creating/editing annotations
+    - Event type selection
+    - Team assignment (Home/Away/Not Applicable)
+    - Visibility toggle
+    - Keyboard navigation support
+    - Time display (auto-filled from current video position)
+    - Keyboard shortcuts help panel
+    =============================================================================
+    -->
     <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -428,13 +630,17 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
+                        <!-- Event Form Section -->
                         <div class="col-md-7" id="videoColumn">
                             <form id="eventForm">
+                                <!-- Event Type Selection -->
                                 <div class="mb-3">
                                     <label for="labelevent" class="form-label">Event Type</label>
                                     <select id="labelevent" class="form-select form-select-lg" required>
+                                        <!-- Options populated dynamically by JavaScript -->
                                     </select>
                                 </div>
+                                <!-- Team Assignment -->
                                 <div class="mb-3">
                                     <label for="team" class="form-label">Team</label>
                                     <select id="team" class="form-select form-select-lg" required>
@@ -443,6 +649,7 @@
                                         <option value="not_applicable">Not Applicable</option>
                                     </select>
                                 </div>
+                                <!-- Visibility Toggle -->
                                 <div class="mb-3">
                                     <label for="visibility" class="form-label">Visibility</label>
                                     <select id="visibility" class="form-select form-select-lg" required>
@@ -450,28 +657,38 @@
                                         <option value="hidden">Hidden</option>
                                     </select>
                                 </div>
-                                <div class="mb-3">
+                                <!-- Time Display (Read-only) -->
+                                <!-- <div class="mb-3">
                                     <label for="seconds" class="form-label">Time (s)</label>
                                     <input type="number" id="seconds" class="form-control form-control-lg" value="0"
                                         min="0" step="1" disabled>
+                                </div> -->
+                                <div class="mb-3">
+                                    <label for="startTime" class="form-label">Start Time (s)</label>
+                                    <input type="number" id="startTime" class="form-control form-control-lg" 
+                                           min="0" step="0.1" value="0" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="endTime" class="form-label">End Time (s)</label>
+                                    <input type="number" id="endTime" class="form-control form-control-lg" 
+                                           min="0" step="0.1" value="10" disabled>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="eventDuration" class="form-label">Event Duration (s)</label>
+                                    <input type="number" id="eventDuration" class="form-control form-control-lg" 
+                                           readonly style="background-color: #f8f9fa;">
                                 </div>
                             </form>
                         </div>
+                        <!-- Keyboard Controls Help Section -->
                         <div class="col-md-5">
                             <div class="text-muted">
                                 <h6 class="mb-3"><i class="bi bi-keyboard"></i> Keyboard Controls</h6>
                                 <div class="mb-2">
-                                    <span class="badge bg-secondary">←/→</span> Team Selection
-                                </div>
-                                <div class="mb-2">
-                                    <span class="badge bg-secondary">↑/↓</span> Visibility Toggle
-                                </div>
-                                <div class="mb-2">
                                     <span class="badge bg-secondary">Enter</span> Save Event
                                 </div>
                                 <div class="mb-2">
-                                    <span class="badge bg-secondary">0-9, D, V, Y, G, P, R, X</span> Event Type
-                                    Selection
+                                    <span class="badge bg-secondary">0-9, D, V, Y, G, P, R, X</span> Event Type Selection
                                 </div>
                             </div>
                         </div>
@@ -485,7 +702,19 @@
         </div>
     </div>
 
-    <!-- Match Info Modal -->
+    <!-- 
+    =============================================================================
+    COMPONENT #7: MATCH INFORMATION MODAL
+    =============================================================================
+    Purpose: Manage match details
+    Features:
+    - Edit match details (teams, date, score)
+    - Video path display
+    - Form validation
+    - Persistent data storage
+    - Integration with video metadata
+    =============================================================================
+    -->
     <div class="modal fade" id="matchInfoModal" tabindex="-1" aria-labelledby="matchInfoModalLabel" data-bs-backdrop="static">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -495,22 +724,27 @@
                 </div>
                 <div class="modal-body">
                     <form id="matchInfoForm">
+                        <!-- Video Path Display (Read-only) -->
                         <div class="mb-3">
                             <label for="urlLocal" class="form-label">Video Path</label>
                             <input type="text" class="form-control" id="urlLocal" readonly>
                         </div>
+                        <!-- Home Team Input -->
                         <div class="mb-3">
                             <label for="gameHomeTeam" class="form-label">Home Team</label>
                             <input type="text" class="form-control" id="gameHomeTeam" required>
                         </div>
+                        <!-- Away Team Input -->
                         <div class="mb-3">
                             <label for="gameAwayTeam" class="form-label">Away Team</label>
                             <input type="text" class="form-control" id="gameAwayTeam" required>
                         </div>
+                        <!-- Match Date Input -->
                         <div class="mb-3">
                             <label for="gameDate" class="form-label">Match Date</label>
                             <input type="date" class="form-control" id="gameDate">
                         </div>
+                        <!-- Match Score Input -->
                         <div class="mb-3">
                             <label for="gameScore" class="form-label">Score (e.g., 2-1)</label>
                             <input type="text" class="form-control" id="gameScore" pattern="\d+-\d+" placeholder="0-0">
@@ -525,6 +759,13 @@
         </div>
     </div>
 
+    <!-- 
+    =============================================================================
+    EXTERNAL JAVASCRIPT DEPENDENCIES
+    =============================================================================
+    Required JavaScript libraries and application script
+    =============================================================================
+    -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>

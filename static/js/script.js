@@ -77,6 +77,112 @@ $(document).ready(function () {
         ]
     }
 
+    // Enhanced event playback functionality
+    let eventPlaybackTimeout = null;
+    let isPlayingEvent = false;
+
+
+    // Update event list generation to include event index
+    function updateEventList() {
+        const filter = $('#eventFilter').val();
+        const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
+
+        filteredAnnotations.sort((a, b) => a.startTime - b.startTime);
+
+        $('#eventList').empty();
+        filteredAnnotations.forEach((event, index) => {
+            console.log("index===>", index)
+            if (typeof event.seconds === 'number' && !isNaN(event.seconds)) {
+                const color = getEventColor(event.label);
+                const labelIndex = eventLabelValues[currentFormat].indexOf(event.label);
+                const displayLabel = eventLabels[currentFormat][labelIndex];
+                const originalIndex = annotations.indexOf(event);
+
+                $('#eventList').append(`
+                <li class="list-group-item event-item" 
+                    data-seconds="${event.seconds}" 
+                    data-event-index="${index}"
+                    style="border-left-color: ${color}; display: flex;">
+                    <p style="flex: 1; word-break: break-all;">
+                        <strong>${displayLabel}:</strong> 
+                        ${formatTimeToSeconds(event.startTime || event.seconds)} - 
+                        ${formatTimeToSeconds(event.endTime || event.seconds)}
+                        | ${event.team}
+                    </p>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-danger float-end" onclick="deleteEvent(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning float-end me-2" onclick="editEvent(${index})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </div>
+                </li>
+            `);
+            }
+        });
+
+        // $('.event-item').off('click').on('click', function () {
+        //     const eventIndex = $(this).data('event-index');
+        //     if (eventIndex !== undefined) {
+        //         playEvent(annotations[eventIndex]);
+        //     }
+        // });
+
+        $('.event-item').off('click').on('click', function () {
+            const seconds = parseFloat($(this).data('seconds'));
+            const eventIndex = $(this).data('event-index');
+
+            const filter = $('#eventFilter').val();
+            const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
+            const event = filteredAnnotations[eventIndex];
+            
+
+            if (!isNaN(seconds) && eventIndex !== undefined) {
+                console.log("EVENT ITEM CLICKED");
+                // playEvent(annotations[eventIndex]);
+                editEvent(eventIndex);
+            }
+        });
+    }
+
+
+    // Stop event playback
+    function stopEventPlayback() {
+        if (eventPlaybackTimeout) {
+            clearTimeout(eventPlaybackTimeout);
+            eventPlaybackTimeout = null;
+        }
+        isPlayingEvent = false;
+        hideEventPlaybackIndicator();
+    }
+
+    function hideEventPlaybackIndicator() {
+        $('.event-playback-indicator').remove();
+    }
+
+    // Add CSS animation for pulse effect
+    $('<style>').text(`
+    @keyframes pulse {
+        0% { opacity: 0.7; }
+        50% { opacity: 1; }
+        100% { opacity: 0.7; }
+    }
+`).appendTo('head');
+
+    // Stop event playback when user manually controls video
+    videoPlayer.addEventListener('seeking', function () {
+        if (isPlayingEvent) {
+            stopEventPlayback();
+        }
+    });
+
+    videoPlayer.addEventListener('pause', function () {
+        if (isPlayingEvent && !videoPlayer.seeking) {
+            stopEventPlayback();
+        }
+    });
+
     // Hide shortcuts initially
     $('#eventShortcuts').parent().parent().hide();
 
@@ -177,6 +283,17 @@ $(document).ready(function () {
         });
     }
 
+    // Add duration calculation
+    function calculateEventDuration() {
+        const startTime = parseFloat($('#startTime').val()) || 0;
+        const endTime = parseFloat($('#endTime').val()) || 0;
+        const duration = Math.max(0, endTime - startTime);
+        $('#eventDuration').val(duration.toFixed(1));
+    }
+
+    // Add event listeners for automatic calculation
+    $('#startTime, #endTime').on('input', calculateEventDuration);
+
     // Call on page load
     populateVideoSelect();
 
@@ -210,11 +327,16 @@ $(document).ready(function () {
             const currentTime = formatTime(videoPlayer.currentTime);
             const duration = formatTime(videoPlayer.duration);
             $('#currentTime').text(currentTime);
-            $('#duration').text(duration);
+            $('#videoDuration').text(duration);
 
-            // Update seek bar position
+            // Update video seek bar position
             const percentage = (videoPlayer.currentTime / videoPlayer.duration) * 100;
-            $('#seekBarMarkers').css('width', `${percentage}%`);
+            $('#videoSeekBarProgress').css('width', `${percentage}%`);
+            
+            // Update time cursor if in editing mode
+            if (eventBeingEdited) {
+                updateTimeCursor();
+            }
         } catch (error) {
             console.error("Error updateTimeDisplay:", error);
         }
@@ -270,8 +392,6 @@ $(document).ready(function () {
 
     // Function to seek to a specific time
     function seekTo(time) {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
-
         // Ensure time is within valid range
         time = Math.max(0, Math.min(time, videoPlayer.duration));
 
@@ -298,7 +418,6 @@ $(document).ready(function () {
 
     // Function to seek by frames
     function seekByFrames(frames) {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
         if (!videoMetadata) return;
 
         // Calculate new frame number
@@ -332,19 +451,29 @@ $(document).ready(function () {
     // Frame navigation with debouncing
     let frameTimeout;
     $('#seekBackFrame').on('click', function () {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
-        clearTimeout(frameTimeout);
-        frameTimeout = setTimeout(() => {
-            seekByFrames(-1);
-        }, 50);
+        if (addEventModalOpened && eventBeingEdited) {
+            // Use for pointer control during editing (1 second)
+            adjustActivePointer(-1);
+        } else if (!addEventModalOpened) {
+            // Normal 1-second seeking
+            clearTimeout(frameTimeout);
+            frameTimeout = setTimeout(() => {
+                seekTo(videoPlayer.currentTime - 1);
+            }, 50);
+        }
     });
 
     $('#seekForwardFrame').on('click', function () {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
-        clearTimeout(frameTimeout);
-        frameTimeout = setTimeout(() => {
-            seekByFrames(1);
-        }, 50);
+        if (addEventModalOpened && eventBeingEdited) {
+            // Use for pointer control during editing (1 second)
+            adjustActivePointer(1);
+        } else if (!addEventModalOpened) {
+            // Normal 1-second seeking
+            clearTimeout(frameTimeout);
+            frameTimeout = setTimeout(() => {
+                seekTo(videoPlayer.currentTime + 1);
+            }, 50);
+        }
     });
 
     $('#videoPlayer').off('click').on('click', function () {
@@ -353,6 +482,7 @@ $(document).ready(function () {
 
     // Update keyboard shortcuts
     $(document).on('keydown', function (e) {
+        console.log("======= KEYDOWN =======")
         // handle ctrl + S
         if (e.ctrlKey && e.key === 's') {
             e.preventDefault();
@@ -384,65 +514,23 @@ $(document).ready(function () {
         // console.log('keydown -> e', e);
         if (addEventModalOpened) {
             const key = e.key.toLowerCase();
-            if (shortcuts[key]) {
+            
+            // Check if user is typing in an input field
+            const isTyping = $(e.target).is('input, textarea, select');
+            
+            // Event label shortcuts (only when not typing)
+            if (!isTyping && shortcuts[key]) {
                 e.preventDefault();
                 $('#labelevent').val(shortcuts[key]);
                 return;
             }
 
-            switch (e.key) {
-                case 'ArrowLeft':
-                case 'ArrowRight':
-                    e.preventDefault();
-                    const team = $('#team').val();
-                    console.log("addEventModalOpened -> team ", team);
-                    const teamOptions = $('#team').find('option').map(function () {
-                        return $(this).val();
-                    }).get();
-                    console.log("addEventModalOpened -> teamOptions ", teamOptions);
-                    const currentIndexTeam = teamOptions.indexOf(team);
-                    console.log("addEventModalOpened -> currentIndexTeam ", currentIndexTeam);
-                    console.log("addEventModalOpened -> ArrowLeftRight");
-                    // set next value of team
-                    let nextIndexTeam = currentIndexTeam;
-                    console.log("addEventModalOpened -> ArrowLeftRight -> currentIndexTeam ", currentIndexTeam);
-                    if (e.key === 'ArrowLeft') {
-                        console.log("addEventModalOpened -> ArrowLeft");
-                        nextIndexTeam = (currentIndexTeam - 1 + teamOptions.length) % teamOptions.length;
-                    } else {
-                        console.log("addEventModalOpened -> ArrowRight");
-                        nextIndexTeam = (currentIndexTeam + 1) % teamOptions.length;
-                    }
-                    console.log("addEventModalOpened -> ArrowLeftRight -> nextIndexTeam ", nextIndexTeam);
-                    $('#team').val(teamOptions[nextIndexTeam]);
-                    break;
-                case 'ArrowUp':
-                case 'ArrowDown':
-                    e.preventDefault();
-                    console.log("addEventModalOpened -> ArrowUpDown");
-                    const visibility = $('#visibility').val();
-                    const visibilityOptions = $('#visibility').find('option').map(function () {
-                        return $(this).val();
-                    }).get();
-                    const currentIndexVisibility = visibilityOptions.indexOf(visibility);
-                    // set next value for visibility
-                    let nextIndexVisibility = currentIndexVisibility;
-                    console.log("addEventModalOpened -> ArrowUpDown -> currentIndexVisibility ", currentIndexVisibility);
-                    if (e.key === 'ArrowUp') {
-                        console.log("addEventModalOpened -> ArrowUp");
-                        nextIndexVisibility = (currentIndexVisibility - 1 + visibilityOptions.length) % visibilityOptions.length;
-                    } else {
-                        console.log("addEventModalOpened -> ArrowDown");
-                        nextIndexVisibility = (currentIndexVisibility + 1) % visibilityOptions.length;
-                    }
-                    console.log("addEventModalOpened -> ArrowUpDown -> nextIndexVisibility ", nextIndexVisibility);
-                    $('#visibility').val(visibilityOptions[nextIndexVisibility]);
-                    break;
-                case 'Enter':
-                    console.log("addEventModalOpened -> Enter");
-                    e.preventDefault();
-                    $('#saveEventBtn').click();
-                    break;
+
+            // Only handle Enter when not typing in input fields
+            if (e.key === 'Enter' && !isTyping) {
+                console.log("addEventModalOpened -> Enter");
+                e.preventDefault();
+                $('#saveEventBtn').click();
             }
             return;
         }
@@ -470,8 +558,9 @@ $(document).ready(function () {
             return;
         }
 
-        // Handle video control shortcuts
-        if (!matchInfoModalOpened && !addEventModalOpened) {
+        // Handle video control shortcuts (only when not typing in input fields)
+        const isTyping = $(e.target).is('input, textarea, select');
+        if (!matchInfoModalOpened && !isTyping) {
             switch (e.key) {
                 case ' ':
                     e.preventDefault();
@@ -484,7 +573,7 @@ $(document).ready(function () {
                 case 'ArrowLeft':
                     e.preventDefault();
                     if (e.shiftKey) {
-                        seekByFrames(-1);
+                        seekTo(videoPlayer.currentTime - 1); // 1 second backward
                     } else {
                         seekTo(videoPlayer.currentTime - currentSeekTime);
                     }
@@ -492,7 +581,7 @@ $(document).ready(function () {
                 case 'ArrowRight':
                     e.preventDefault();
                     if (e.shiftKey) {
-                        seekByFrames(1);
+                        seekTo(videoPlayer.currentTime + 1); // 1 second forward
                     } else {
                         seekTo(videoPlayer.currentTime + currentSeekTime);
                     }
@@ -508,8 +597,10 @@ $(document).ready(function () {
                     $('#volumeControl').val(videoPlayer.volume);
                     break;
                 case 'Enter':
-                    e.preventDefault();
-                    $('#addEventBtn').click();
+                    if (!addEventModalOpened) {
+                        e.preventDefault();
+                        $('#addEventBtn').click();
+                    }
                     break;
             }
         }
@@ -542,37 +633,61 @@ $(document).ready(function () {
             videoPlayer.webkitVideoDecodedByteCount : 30;
     });
 
-    // Custom controls
+    // Custom controls with range playback support
     $('#playPauseBtn').on('click', function () {
-        if (videoPlayer.paused) {
-            console.log("playPauseBtn -> play -> currentTime ", videoPlayer.currentTime);
-            playVideoPlayer();
+        // In editing mode, always use range playback
+        if (eventBeingEdited) {
+            if (videoPlayer.paused || !isRangePlayback) {
+                // Start or restart range playback
+                console.log("playPauseBtn -> starting range playback");
+                playEventRange();
+            } else {
+                // Pause current range playback
+                console.log("playPauseBtn -> pausing range playback");
+                pauseVideoPlayer();
+                stopRangePlayback();
+            }
         } else {
-            console.log("playPauseBtn -> pause -> currentTime ", videoPlayer.currentTime);
-            pauseVideoPlayer();
+            // Normal video playback mode
+            if (videoPlayer.paused) {
+                console.log("playPauseBtn -> play -> currentTime ", videoPlayer.currentTime);
+                playVideoPlayer();
+            } else {
+                console.log("playPauseBtn -> pause -> currentTime ", videoPlayer.currentTime);
+                pauseVideoPlayer();
+            }
         }
     });
 
     // Update seek buttons
     $('#seekBack5s').on('click', function () {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
-        clearTimeout(frameTimeout);
-        frameTimeout = setTimeout(() => {
-            seekTo(videoPlayer.currentTime - currentSeekTime);
-        }, 50);
+        if (addEventModalOpened && eventBeingEdited) {
+            // Use for pointer control during editing
+            adjustActivePointer(-currentSeekTime);
+        } else if (!addEventModalOpened) {
+            // Normal video seeking
+            clearTimeout(frameTimeout);
+            frameTimeout = setTimeout(() => {
+                seekTo(videoPlayer.currentTime - currentSeekTime);
+            }, 50);
+        }
     });
 
     $('#seekForward5s').on('click', function () {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
-        clearTimeout(frameTimeout);
-        frameTimeout = setTimeout(() => {
-            seekTo(videoPlayer.currentTime + currentSeekTime);
-        }, 50);
+        if (addEventModalOpened && eventBeingEdited) {
+            // Use for pointer control during editing
+            adjustActivePointer(currentSeekTime);
+        } else if (!addEventModalOpened) {
+            // Normal video seeking
+            clearTimeout(frameTimeout);
+            frameTimeout = setTimeout(() => {
+                seekTo(videoPlayer.currentTime + currentSeekTime);
+            }, 50);
+        }
     });
 
-    // Custom seek bar
-    $('#seekBar').on('click', function (e) {
-        if (addEventModalOpened) return; // Prevent seeking if modal is open
+    // Video position control seek bar
+    $('#videoSeekBar').on('click', function (e) {
         try {
             const rect = this.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -580,9 +695,556 @@ $(document).ready(function () {
             const time = percentage * videoPlayer.duration;
             seekTo(time);
         } catch (error) {
-            console.error("Error seekBar onclick:", error);
+            console.error("Error videoSeekBar onclick:", error);
         }
     });
+
+    // Event editing seek bar (no video control functionality)
+    $('#eventEditSeekBar').on('click', function (e) {
+        // This seek bar is only for event editing, not video control
+        e.preventDefault();
+        console.log('Event editing seek bar clicked - no video control');
+    });
+
+    // ===============================================================================
+    // EVENT BOUNDING BOX FUNCTIONALITY
+    // ===============================================================================
+
+    // Bounding box control variables
+    let isDragging = false;
+    let dragHandle = null;
+    let eventBeingEdited = null;
+    let timelineWindow = 120; // 2 minutes in seconds
+
+    // Show enhanced timeline markers when editing event
+    function showEventTimeline(event) {
+        const seekBar = $('#eventEditSeekBar')[0];
+        if (!seekBar || !videoPlayer.duration) return;
+
+        eventBeingEdited = event;
+        
+        // Activate video player editing mode
+        activateVideoEditingMode();
+
+        // Show fixed window based on event start/end times
+        showFixedEventWindow(event);
+        
+        // Calculate positions within the fixed window
+        updateTimelineMarkers(event);
+
+        // Show time cursor
+        updateTimeCursor();
+        
+        // Ensure cursor is visible
+        $('#timeCursor').show();
+
+        // Show event editing section
+        $('#eventEditingSection').addClass('show-editing');
+    }
+
+    // Show fixed timeline window based on event boundaries
+    function showFixedEventWindow(event) {
+        const seekBar = $('#eventEditSeekBar')[0];
+        const videoDuration = videoPlayer.duration;
+
+        if (!seekBar || !videoDuration) return;
+
+        // Calculate window based on event start and end times
+        const eventDuration = event.endTime - event.startTime;
+        const padding = Math.max(10, eventDuration * 0.5); // At least 10s padding or 50% of event duration
+        
+        const windowStart = Math.max(0, event.startTime - padding);
+        const windowEnd = Math.min(videoDuration, event.endTime + padding);
+        
+        console.log('🎯 Fixed event window:', {
+            eventStart: event.startTime,
+            eventEnd: event.endTime,
+            eventDuration,
+            padding,
+            windowStart,
+            windowEnd,
+            windowDuration: windowEnd - windowStart
+        });
+
+        // Store the fixed window for other functions
+        eventBeingEdited.windowStart = windowStart;
+        eventBeingEdited.windowEnd = windowEnd;
+
+        // Remove existing window
+        $('.timeline-window').remove();
+
+        // Add new fixed window indicator
+        const startPercent = (windowStart / videoDuration) * 100;
+        const endPercent = (windowEnd / videoDuration) * 100;
+
+        const windowDiv = $('<div class="timeline-window"></div>');
+        windowDiv.css({
+            left: startPercent + '%',
+            width: (endPercent - startPercent) + '%'
+        });
+
+        $('#eventEditSeekBar').append(windowDiv);
+    }
+
+    // Update timeline markers positions within fixed event window
+    function updateTimelineMarkers(event) {
+        if (!event || !videoPlayer.duration) return;
+        
+        // Use the fixed window stored in the event
+        const windowStart = event.windowStart || 0;
+        const windowEnd = event.windowEnd || videoPlayer.duration;
+        const windowDuration = windowEnd - windowStart;
+        
+        // Calculate positions relative to the fixed window
+        const startPosInWindow = ((event.startTime - windowStart) / windowDuration) * 100;
+        const endPosInWindow = ((event.endTime - windowStart) / windowDuration) * 100;
+        
+        console.log('🎯 Timeline markers in fixed window:', {
+            windowStart, windowEnd, windowDuration,
+            eventStart: event.startTime, eventEnd: event.endTime,
+            startPosInWindow, endPosInWindow
+        });
+
+        // Show duration highlight
+        $('#eventDurationHighlight').css({
+            left: Math.max(0, startPosInWindow) + '%',
+            width: Math.max(1, endPosInWindow - startPosInWindow) + '%',
+            display: 'block'
+        });
+
+        // Show start marker
+        $('#startMarker').css({
+            left: Math.max(0, startPosInWindow) + '%',
+            display: 'block'
+        });
+
+        // Show end marker  
+        $('#endMarker').css({
+            left: Math.min(100, endPosInWindow) + '%',
+            display: 'block'
+        });
+
+        // Update marker time displays
+        $('#startMarkerTime').text(formatTimeToSeconds(event.startTime));
+        $('#endMarkerTime').text(formatTimeToSeconds(event.endTime));
+
+        // Update timeline labels to show window boundaries
+        $('#timelineStart').text(formatTimeToSeconds(windowStart));
+        $('#timelineEnd').text(formatTimeToSeconds(windowEnd));
+    }
+
+    // Activate video editing mode
+    function activateVideoEditingMode() {
+        // Pause video when entering edit mode
+        pauseVideoPlayer();
+        
+        // Hide all video position controls during editing
+        $('#videoPositionControlSeekBar').addClass('d-none'); // Hides: currentTime, videoSeekBar, videoDuration
+        console.log('🚫 Video position controls hidden during editing mode');
+        
+        // Add active class to video player container
+        $('#videoContainer').addClass('video-player-active');
+        
+        // Add active class to timeline
+        $('#eventEditSeekBar').parent().parent().addClass('timeline-editing-active');
+        
+        // Add editing mode class to modal
+        $('#addEventModal').addClass('editing-mode');
+        
+        // Add editing mode class to backdrop
+        $('.modal-backdrop').addClass('editing-mode');
+        
+        // Highlight video controls for editing
+        $('.d-flex.gap-2').addClass('video-controls-editing');
+        
+        // Initialize pointer selection
+        selectPointer('start');
+        
+        // Scroll video into view smoothly
+        const videoContainer = $('#videoContainer')[0];
+        if (videoContainer) {
+            videoContainer.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }
+    }
+
+    // Deactivate video editing mode
+    function deactivateVideoEditingMode() {
+        // Show all video position controls again
+        $('#videoPositionControlSeekBar').removeClass('d-none'); // Shows: currentTime, videoSeekBar, videoDuration
+        console.log('✅ Video position controls restored after editing mode');
+        
+        // Remove active classes
+        $('#videoContainer').removeClass('video-player-active');
+        $('#eventEditSeekBar').parent().parent().removeClass('timeline-editing-active');
+        $('#addEventModal').removeClass('editing-mode');
+        $('.modal-backdrop').removeClass('editing-mode');
+        $('.d-flex.gap-2').removeClass('video-controls-editing');
+        
+        // Reset pointer selection
+        activePointer = 'start';
+        $('#startMarker').removeClass('active-marker');
+        $('#endMarker').removeClass('active-marker');
+    }
+
+    // Update time cursor position within fixed event window
+    function updateTimeCursor() {
+        if (!videoPlayer.duration || !eventBeingEdited) return;
+        
+        // Use the fixed window stored in the event
+        const windowStart = eventBeingEdited.windowStart || 0;
+        const windowEnd = eventBeingEdited.windowEnd || videoPlayer.duration;
+        const windowDuration = windowEnd - windowStart;
+        
+        // Calculate cursor position relative to the fixed window
+        const currentTime = videoPlayer.currentTime;
+        const cursorPosInWindow = ((currentTime - windowStart) / windowDuration) * 100;
+        
+        // Always show cursor when in editing mode, but position it correctly
+        $('#timeCursor').css({
+            left: Math.max(0, Math.min(100, cursorPosInWindow)) + '%',
+            display: 'block'
+        });
+        
+        console.log(`🔵 Cursor updated: ${currentTime.toFixed(1)}s at ${cursorPosInWindow.toFixed(1)}%`);
+    }
+
+    // Enhanced dragging functionality for timeline markers
+    $('.timeline-marker').on('mousedown', function (e) {
+        e.preventDefault();
+        isDragging = true;
+        dragHandle = $(this).data('marker'); // 'start' or 'end'
+
+        $(document).on('mousemove', handleMarkerDrag);
+        $(document).on('mouseup', stopMarkerDrag);
+    });
+
+    // Re-bind events when markers are shown
+    function bindMarkerEvents() {
+        $('.timeline-marker').off('mousedown click').on('mousedown', function (e) {
+            e.preventDefault();
+            isDragging = true;
+            dragHandle = $(this).data('marker');
+
+            $(document).on('mousemove', handleMarkerDrag);
+            $(document).on('mouseup', stopMarkerDrag);
+        }).on('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Select this pointer for editing
+            const markerType = $(this).data('marker');
+            selectPointer(markerType);
+            console.log(`🎯 Clicked on ${markerType} marker - selected for editing`);
+        });
+    }
+
+    function handleMarkerDrag(e) {
+        if (!isDragging || !eventBeingEdited) return;
+
+        const seekBar = $('#eventEditSeekBar')[0];
+        const rect = seekBar.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        
+        // Calculate time within the fixed event window
+        const windowStart = eventBeingEdited.windowStart || 0;
+        const windowEnd = eventBeingEdited.windowEnd || videoPlayer.duration;
+        const windowDuration = windowEnd - windowStart;
+        const time = windowStart + (percentage / 100) * windowDuration;
+
+        if (dragHandle === 'start') {
+            // Dragging start marker
+            if (time < eventBeingEdited.endTime - 0.5 && time >= windowStart) { // Minimum 0.5s duration and within window
+                eventBeingEdited.startTime = time;
+                
+                // Pause video and seek to the start position
+                pauseVideoPlayer();
+                videoPlayer.currentTime = time;
+                
+                // Update markers
+                updateTimelineMarkers(eventBeingEdited);
+                updateTimeCursor();
+            }
+        } else if (dragHandle === 'end') {
+            // Dragging end marker
+            if (time > eventBeingEdited.startTime + 0.5 && time <= windowEnd) { // Minimum 0.5s duration and within window
+                eventBeingEdited.endTime = time;
+                
+                // Pause video and seek to the end position
+                pauseVideoPlayer();
+                videoPlayer.currentTime = time;
+                
+                // Update markers
+                updateTimelineMarkers(eventBeingEdited);
+                updateTimeCursor();
+            }
+        }
+
+        // Update seconds (middle point)
+        eventBeingEdited.seconds = (eventBeingEdited.startTime + eventBeingEdited.endTime) / 2;
+
+        // Update form fields if modal is open
+        if ($('#addEventModal').hasClass('show')) {
+            $('#startTime').val(eventBeingEdited.startTime.toFixed(1));
+            $('#endTime').val(eventBeingEdited.endTime.toFixed(1));
+            calculateEventDuration();
+        }
+    }
+
+    function stopMarkerDrag() {
+        if (isDragging && eventBeingEdited) {
+            // Save the changes
+            const originalIndex = annotations.findIndex(a => a === eventBeingEdited);
+            if (originalIndex >= 0) {
+                editAnnotation(originalIndex, eventBeingEdited);
+            }
+        }
+
+        isDragging = false;
+        dragHandle = null;
+        $(document).off('mousemove', handleMarkerDrag);
+        $(document).off('mouseup', stopMarkerDrag);
+    }
+
+    // Hide timeline markers
+    function hideEventTimeline() {
+        // Deactivate video editing mode
+        deactivateVideoEditingMode();
+        
+        // Hide event editing section completely
+        $('#eventEditingSection').removeClass('show-editing');
+        
+        // Hide timeline elements
+        $('#eventDurationHighlight').hide();
+        $('#startMarker').hide();
+        $('#endMarker').hide();
+        $('#timeCursor').hide();
+        $('.timeline-window').remove();
+        $('#timelineStart').text('00:00');
+        $('#timelineEnd').text('00:00');
+        eventBeingEdited = null;
+    }
+
+    // Update edit event function to show enhanced timeline
+    window.editEvent = function (index) {
+        console.log('🔥 editEvent called with index:', index);
+        pauseVideoPlayer();
+        const filter = $('#eventFilter').val(); 
+        const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
+        const event = filteredAnnotations[index];
+
+        if (!event) {
+            console.error('Event not found at index:', index);
+            return;
+        }
+
+        // Ensure event has startTime and endTime
+        if (!event.startTime) event.startTime = event.seconds - 5;
+        if (!event.endTime) event.endTime = event.seconds + 5;
+
+        console.log('🎯 Opening modal for event:', event);
+        
+        // First show the timeline and then open modal
+        showEventTimeline(event);
+        bindMarkerEvents(); // Bind drag events to markers
+        openEventModal(filter, index);
+    };
+
+    // Hide timeline when modal closes
+    $('#addEventModal').on('hidden.bs.modal', function () {
+        hideEventTimeline();
+    });
+
+    // Ensure timeline is hidden on page load
+    function ensureTimelineHidden() {
+        $('#eventEditingSection').removeClass('show-editing');
+        console.log('🔒 Event editing timeline hidden on page load');
+    }
+
+    // Call on document ready
+    $(document).ready(function() {
+        ensureTimelineHidden();
+    });
+
+    // RANGE PLAYBACK FUNCTIONS
+    // ===============================================================================
+
+    let rangePlaybackTimeout = null;
+    let isRangePlayback = false;
+
+    // Play video within event range only
+    function playEventRange() {
+        // remove timeout
+        clearTimeout(rangePlaybackTimeout);
+        rangePlaybackTimeout = null;
+        if (!eventBeingEdited) {
+            playVideoPlayer();
+            return;
+        }
+        
+
+        const startTime = eventBeingEdited.startTime;
+        const endTime = eventBeingEdited.endTime;
+        const duration = endTime - startTime;
+
+        // If current time is outside range, start from beginning
+        if (videoPlayer.currentTime < startTime || videoPlayer.currentTime > endTime) {
+            console.log("videoPlayer.currentTime < startTime || videoPlayer.currentTime > endTime")
+            videoPlayer.currentTime = startTime;
+        }
+
+        // Start playback
+        isRangePlayback = true;
+        videoPlayer.play().then(() => {
+            $('#playPauseBtn').html('<i class="bi bi-pause-fill"></i>').addClass('range-playback-mode');
+            
+            // Set timeout to pause at end time
+            const remainingTime = endTime - videoPlayer.currentTime;
+            rangePlaybackTimeout = setTimeout(() => {
+                pauseVideoPlayer();
+                stopRangePlayback();
+                // reset the current time to the start time
+                videoPlayer.currentTime = startTime;
+                console.log(`🎬 Range playback completed: ${startTime.toFixed(1)}s - ${endTime.toFixed(1)}s`);
+            }, remainingTime * 1000);
+            
+            console.log(`🎬 Range playback started: ${startTime.toFixed(1)}s - ${endTime.toFixed(1)}s (${duration.toFixed(1)}s)`);
+        }).catch(error => {
+            console.error('Error during range playback:', error);
+            stopRangePlayback();
+        });
+    }
+
+    // Stop range playback
+    function stopRangePlayback() {
+        if (rangePlaybackTimeout) {
+            clearTimeout(rangePlaybackTimeout);
+            rangePlaybackTimeout = null;
+        }
+        isRangePlayback = false;
+        $('#playPauseBtn').removeClass('range-playback-mode');
+    }
+
+    // // Monitor video time during range playback
+    // videoPlayer.addEventListener('timeupdate', function() {
+    //     if (isRangePlayback && eventBeingEdited) {
+    //         const currentTime = videoPlayer.currentTime;
+    //         const endTime = eventBeingEdited.endTime;
+            
+    //         // Stop if we've reached the end time
+    //         if (currentTime >= endTime) {
+    //             pauseVideoPlayer();
+    //             stopRangePlayback();
+    //             console.log(`🎬 Range playback stopped at end: ${endTime.toFixed(1)}s`);
+    //         }
+    //     }
+    // });
+
+    // POINTER CONTROL FUNCTIONS
+    // ===============================================================================
+
+    let activePointer = 'start'; // 'start' or 'end'
+
+    // Select which pointer to control
+    window.selectPointer = function(pointer) {
+        activePointer = pointer;
+        
+        // Update timeline marker highlighting
+        $('#startMarker').toggleClass('active-marker', pointer === 'start');
+        $('#endMarker').toggleClass('active-marker', pointer === 'end');
+        
+        // Update text indicator
+        const pointerText = pointer === 'start' ? 'Start Time' : 'End Time';
+        const textClass = pointer === 'start' ? 'text-success' : 'text-danger';
+        $('#activePointerText').text(pointerText).removeClass('text-success text-danger').addClass(textClass);
+        
+        console.log(`🎯 Active pointer switched to: ${pointer}`);
+    };
+
+    // Adjust start or end pointer by specified seconds
+    window.adjustPointer = function(pointer, seconds) {
+        clearTimeout(rangePlaybackTimeout);
+        rangePlaybackTimeout = null;
+        if (!eventBeingEdited) return;
+
+        const windowStart = eventBeingEdited.windowStart || 0;
+        const windowEnd = eventBeingEdited.windowEnd || videoPlayer.duration;
+
+        if (pointer === 'start') {
+            const newStartTime = Math.max(windowStart, 
+                Math.min(eventBeingEdited.endTime - 0.5, eventBeingEdited.startTime + seconds));
+            
+            if (newStartTime !== eventBeingEdited.startTime) {
+                eventBeingEdited.startTime = newStartTime;
+                
+                // Pause video and seek to new start position
+                pauseVideoPlayer();
+                videoPlayer.currentTime = newStartTime;
+                
+                // Update display
+                updateTimelineMarkers(eventBeingEdited);
+                updateTimeCursor();
+                updateModalFields();
+                
+                console.log(`🟢 Start adjusted by ${seconds}s to ${newStartTime.toFixed(1)}s`);
+            }
+        } else if (pointer === 'end') {
+            const newEndTime = Math.min(windowEnd, 
+                Math.max(eventBeingEdited.startTime + 0.5, eventBeingEdited.endTime + seconds));
+            
+            if (newEndTime !== eventBeingEdited.endTime) {
+                eventBeingEdited.endTime = newEndTime;
+                
+                // Pause video and seek to new end position
+                pauseVideoPlayer();
+                videoPlayer.currentTime = newEndTime;
+                
+                // Update display
+                updateTimelineMarkers(eventBeingEdited);
+                updateTimeCursor();
+                updateModalFields();
+                
+                console.log(`🔴 End adjusted by ${seconds}s to ${newEndTime.toFixed(1)}s`);
+            }
+        }
+
+        // Update seconds (middle point)
+        eventBeingEdited.seconds = (eventBeingEdited.startTime + eventBeingEdited.endTime) / 2;
+
+        // Save changes
+        const originalIndex = annotations.findIndex(a => a === eventBeingEdited);
+        if (originalIndex >= 0) {
+            editAnnotation(originalIndex, eventBeingEdited);
+        }
+    };
+
+    // Adjust the currently active pointer
+    function adjustActivePointer(seconds) {
+        adjustPointer(activePointer, seconds);
+    }
+
+    // Update modal fields helper function
+    function updateModalFields() {
+        if ($('#addEventModal').hasClass('show')) {
+            $('#startTime').val(eventBeingEdited.startTime.toFixed(1));
+            $('#endTime').val(eventBeingEdited.endTime.toFixed(1));
+            calculateEventDuration();
+        }
+    }
+
+    // Function to calculate event duration (for the modal form)
+    function calculateEventDuration() {
+        const startTime = parseFloat($('#startTime').val()) || 0;
+        const endTime = parseFloat($('#endTime').val()) || 0;
+        const duration = Math.max(0, endTime - startTime);
+        $('#eventDuration').val(duration.toFixed(1));
+    }
+
+    // Add event listeners for automatic duration calculation
+    $(document).on('input', '#startTime, #endTime', calculateEventDuration);
 
     // Function to update metadata display
     function updateMetadataDisplay() {
@@ -596,7 +1258,7 @@ $(document).ready(function () {
             $('#metadataResolution').text(`${videoMetadata.width}x${videoMetadata.height}`);
             $('#metadataCurrentFrame').text(`Frame: ${currentFrame}`);
 
-            
+
 
         } catch (error) {
             console.error("Error updateMetadataDisplay:", error);
@@ -761,7 +1423,7 @@ $(document).ready(function () {
         // Show loading indicator
         $('#metadataLoading').removeClass('d-none');
 
-        
+
         // Then get metadata and update UI
         $.get(`/get_video_metadata/${processVideoNameMultipleDot(filename).split('/').pop()}`, function (metadata) {
             videoMetadata = metadata;
@@ -822,7 +1484,7 @@ $(document).ready(function () {
         const selectedVideo = $(this).val();
         const selectedOption = $(this).find('option:selected');
         const displayName = selectedOption.text();
-        
+
         console.log('videoSelect -> change -> selectedVideo', selectedVideo);
         $('#videoUpload').val('');
         if (selectedVideo) {
@@ -841,7 +1503,7 @@ $(document).ready(function () {
                     $('#metadataLoading').addClass('d-none');
                     return;
                 }
-                
+
                 annotations = response.annotations?.annotations || [];
                 annotations = annotations.map(annotation => ({
                     ...annotation,
@@ -936,7 +1598,7 @@ $(document).ready(function () {
                                 enableAllButtons();
                                 return;
                             }
-                            
+
                             //Update UI with video information
                             annotations = response.annotations?.annotations || [];
                             if (!Array.isArray(annotations)) {
@@ -1000,9 +1662,11 @@ $(document).ready(function () {
     }
 
     function openEventModal(label = '', annotation_index = -1) {
+        console.log("========== OPEN EVENT MODAL ==========")
         if (addEventModalOpened) {
             return; // Prevent opening if modal is already open
         }
+        
         if (!videoFile) {
             alert('Please upload a video first');
             return;
@@ -1017,96 +1681,86 @@ $(document).ready(function () {
         if (annotation_index >= 0) {
             is_editting = true;
         }
-
+        
+        console.log("🐧 > openEventModal > label:", label)
+        const filteredAnnotations = label === 'all' ? annotations : annotations.filter(event => event.label === label);
+        console.log("keys of object", filteredAnnotations.length > 0 ? Object.keys(filteredAnnotations[0]) : [])
+        console.log("filteredAnnotations[0]", filteredAnnotations[0])
+        console.log("annotations", annotations)
         $('#addEventModal').modal('show');
         console.log('openEventModal >>>>>>>> label >>>>>>>>>> annotation_index', label, annotation_index);
         if (is_editting) {
-            // get filtered annotations
-            const labelSelected = $('#eventFilter').val();
+            console.log("🐧 > openEventModal > is_editting")
+            const event = filteredAnnotations[annotation_index];
+            $('#startTime').val(event.startTime || event.seconds - 5);
+            $('#endTime').val(event.endTime || event.seconds + 5);
+            $('#labelevent').val(event.label);
+            $('#team').val(event.team);
+            $('#visibility').val(event.visibility);
+            calculateEventDuration();
 
-            const filteredAnnotations = labelSelected !== 'all' ? annotations.filter(event => event.label === labelSelected) : annotations;
-            $('#seconds').val(filteredAnnotations[annotation_index].seconds);
-            $('#labelevent').val(filteredAnnotations[annotation_index].label);
-            $('#team').val(filteredAnnotations[annotation_index].team);
-            $('#visibility').val(filteredAnnotations[annotation_index].visibility);
-
-            // set function to save event
+            // Update save function
             $('#saveEventBtn').off('click').on('click', function () {
-                console.log('🤐🤐🤐 edit save event 🤐🤐🤐')
-                const seconds = parseFloat($('#seconds').val());
+                console.log('saveEventBtn clicked ==> is_editting');
+                const startTime = parseFloat($('#startTime').val());
+                console.log("🐧 > openEventModal > startTime:", startTime)
+                const endTime = parseFloat($('#endTime').val());
+                console.log("🐧 > openEventModal > endTime:", endTime)
+                const seconds = (startTime + endTime) / 2; // Middle point
                 const label = $('#labelevent').val();
                 const team = $('#team').val();
                 const visibility = $('#visibility').val();
 
-                const original_index = annotations.findIndex(event => event.seconds === filteredAnnotations[annotation_index].seconds);
+                if (startTime >= endTime) {
+                    alert('End time must be greater than start time');
+                    return;
+                }
 
-                editAnnotation(original_index, { seconds, label, team, visibility });
+                const original_index = annotations.findIndex(event =>
+                    event.seconds === filteredAnnotations[annotation_index].seconds);
+
+                editAnnotation(original_index, {
+                    seconds, startTime, endTime, label, team, visibility
+                });
                 $('#addEventModal').modal('hide');
-                if (wasPlaying) {
-                    playVideoPlayer();
-                    wasPlaying = false;
-                }
             });
-
         } else {
-            // reset form
-            console.log('🎃🎃🎃🎃 reset form 🎃🎃🎃🎃');
-            $('#labelevent').val('');
-            $('#team').val('home');
-            $('#visibility').val('visible');
+            // For new events
+            console.log("🐧 > openEventModal > new events")
+            const currentTime = videoPlayer.currentTime;
+            $('#startTime').val((currentTime).toFixed(1));
+            $('#endTime').val((currentTime + 10).toFixed(1));
+            calculateEventDuration();
+            $('#labelevent').val(label);
 
-            // set seconds to current time
-            $('#seconds').val(videoPlayer.currentTime.toFixed(2));
-            $('#seconds').prop('disabled', true);
-            $('#seconds').prop('readonly', true);
-            $('#seconds').css('pointer-events', 'auto');
+            // Activate editing mode for new events too
+            const newEvent = {
+                startTime: currentTime,
+                endTime: currentTime + 10,
+                seconds: currentTime
+            };
+            showEventTimeline(newEvent);
+            bindMarkerEvents();
 
-            if (label && eventLabelValues[currentFormat].includes(label)) {
-                console.log('label is in eventLabels[currentFormat]', label);
-                $('#labelevent').val(label);
-            } else {
-                console.log('label is not in eventLabelValues[currentFormat]', label);
-                if ($('#eventFilter').val() && $('#eventFilter').val() !== 'all') {
-                    console.log('eventFilter is not empty', $('#eventFilter').val());
-                    $('#labelevent').val($('#eventFilter').val());
-                } else {
-                    // first item of eventLabels[currentFormat]
-                    $('#labelevent').val(eventLabelValues[currentFormat][0]);
-                }
-            }
-
-            // Save event from modal
+            // Update save function for new events
             $('#saveEventBtn').off('click').on('click', function () {
-                console.log('🎃🎃🎃🎃 original save event 🎃🎃🎃🎃');
-                const seconds = parseFloat($('#seconds').val());
+                const startTime = parseFloat($('#startTime').val());
+                const endTime = parseFloat($('#endTime').val());
+                const seconds = (startTime + endTime) / 2;
                 const label = $('#labelevent').val();
                 const team = $('#team').val();
                 const visibility = $('#visibility').val();
-                if (isNaN(seconds) || !label || !team || !visibility) {
-                    alert('Please fill all fields correctly.');
+
+                if (startTime >= endTime) {
+                    alert('End time must be greater than start time');
                     return;
                 }
 
-                // Check for existing event within the same 4 seconds
-                const existingEvent = annotations.find(event =>
-                    event.label === label &&
-                    event.team === team &&
-                    event.visibility === visibility &&
-                    Math.abs(event.seconds - seconds) < 4
-                );
-
-                if (existingEvent) {
-                    alert('An event with the same label, team, and visibility already exists within 4 seconds.');
-                    return;
-                }
-                console.log('create new annotation', seconds, label, team, visibility);
-                const newAnnotation = { seconds, label, team, visibility };
+                const newAnnotation = {
+                    seconds, startTime, endTime, label, team, visibility
+                };
                 addAnnotation(newAnnotation);
                 $('#addEventModal').modal('hide');
-                if (wasPlaying) {
-                    playVideoPlayer();
-                    wasPlaying = false;
-                }
             });
         }
     }
@@ -1153,41 +1807,6 @@ $(document).ready(function () {
     // Filter events by type
     $('#eventFilter').on('change', updateEventList);
 
-    // Update event list and seek bar markers
-    function updateEventList() {
-        const filter = $('#eventFilter').val();
-        const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
-
-        // Sort annotations by time (seconds)
-        filteredAnnotations.sort((a, b) => a.seconds - b.seconds);
-
-        $('#eventList').empty();
-        filteredAnnotations.forEach((event, index) => {
-            if (typeof event.seconds === 'number' && !isNaN(event.seconds)) {
-                const color = getEventColor(event.label);
-                // Get the display label from eventLabels
-                const labelIndex = eventLabelValues[currentFormat].indexOf(event.label);
-                const displayLabel = eventLabels[currentFormat][labelIndex];
-                $('#eventList').append(`
-                    <li class="list-group-item event-item" data-seconds="${event.seconds}" style="border-left-color: ${color}; display: flex;" >
-                        <p style="flex: 1; word-break: break-all;">
-                            <strong>${displayLabel}:</strong> ${formatTimeToSeconds(event.seconds)} | ${event.team}
-                        </p>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-danger float-end" onclick="deleteEvent(${index})"><i class="bi bi-trash"></i></button>
-                            <button class="btn btn-sm btn-warning float-end me-2" onclick="editEvent(${index})"><i class="bi bi-pencil"></i></button>
-                        </div>
-                    </li>
-                `);
-            }
-        });
-
-        $('.event-item').off('click').on('click', function () {
-            const seconds = parseFloat($(this).data('seconds'));
-            if (!isNaN(seconds)) videoPlayer.currentTime = seconds;
-        });
-    }
-
     // Delete event
     window.deleteEvent = function (index) {
         if (!confirm('Are you sure you want to delete this event?')) {
@@ -1195,6 +1814,7 @@ $(document).ready(function () {
         }
         const filter = $('#eventFilter').val();
         const filteredAnnotations = filter === 'all' ? annotations : annotations.filter(event => event.label === filter);
+        console.log("🐧 > openEventModal > filteredAnnotations:", filteredAnnotations)
 
         if (index >= 0 && index < filteredAnnotations.length) {
             annotations.splice(annotations.indexOf(filteredAnnotations[index]), 1);
@@ -1203,13 +1823,13 @@ $(document).ready(function () {
         }
     };
 
-    // Edit event
-    window.editEvent = function (index) {
-        console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
-        console.log('editEvent', index);
-        openEventModal('', index);
-        console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
-    };
+    // // Edit event
+    // window.editEvent = function (index) {
+    //     console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
+    //     console.log('editEvent', index);
+    //     openEventModal('', index);
+    //     console.log('🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥');
+    // };
 
     // Playback speed control
     $('#playbackSpeed').on('change', function () {

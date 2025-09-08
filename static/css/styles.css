@@ -226,6 +226,10 @@ body {
     cursor: pointer;
     border-radius: 5px;
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
 }
 
 .seek-bar-progress {
@@ -245,6 +249,474 @@ body {
 /* Add active state */
 .seek-bar:active .seek-bar-progress {
     background-color: #004085;
+}
+
+/* Event editing seek bar specific styles */
+.event-edit-seekbar {
+    background-color: #f8f9fa;
+    border: 2px solid #dee2e6;
+    cursor: default;
+    height: 20px;
+    border-radius: 8px;
+    position: relative;
+    overflow: visible;
+}
+
+.event-edit-seekbar:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* Event bounding box styles */
+.event-bounding-box {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgba(255, 193, 7, 0.3);
+    border: 2px solid #ffc107;
+    border-radius: 3px;
+    cursor: move;
+    z-index: 15;
+}
+
+.bounding-handle {
+    position: absolute;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    background-color: #ffc107;
+    cursor: ew-resize;
+    border-radius: 2px;
+}
+
+.bounding-start {
+    left: -4px;
+}
+
+.bounding-end {
+    right: -4px;
+}
+
+.bounding-body {
+    position: absolute;
+    top: 0;
+    left: 4px;
+    right: 4px;
+    height: 100%;
+    background-color: rgba(255, 193, 7, 0.2);
+}
+
+/* Timeline 2-minute window indicator */
+.timeline-window {
+    position: absolute;
+    top: -5px;
+    height: 20px;
+    background-color: rgba(0, 123, 255, 0.1);
+    border: 1px dashed #007bff;
+    border-radius: 2px;
+    z-index: 12;
+}
+
+/* Enhanced Event Timeline Markers */
+.timeline-marker {
+    position: absolute;
+    top: -5px;
+    width: 12px;
+    height: 30px;
+    border-radius: 6px;
+    cursor: ew-resize;
+    z-index: 25;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.timeline-marker-start {
+    background-color: #28a745;
+    transform: translateX(-6px);
+}
+
+.timeline-marker-end {
+    background-color: #dc3545;
+    transform: translateX(-6px);
+}
+
+.timeline-marker:hover {
+    transform: translateX(-6px) scale(1.2);
+    transition: transform 0.2s ease;
+}
+
+.timeline-marker::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.timeline-marker-start::after {
+    border-bottom: 6px solid #28a745;
+}
+
+.timeline-marker-end::after {
+    border-bottom: 6px solid #dc3545;
+}
+
+/* Time Cursor */
+.timeline-cursor {
+    position: absolute;
+    top: -8px;
+    width: 3px;
+    height: 36px;
+    background-color: #007bff;
+    border-radius: 2px;
+    z-index: 20;
+    transform: translateX(-1.5px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.timeline-cursor::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 8px solid #007bff;
+}
+
+/* Event Duration Highlight */
+.event-duration-highlight {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgba(255, 193, 7, 0.4);
+    border-radius: 4px;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Timeline Labels */
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+    font-size: 11px;
+    color: #6c757d;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Prevent text selection on time displays */
+#currentTime, #videoDuration, .time-display {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Ensure event editing section is hidden by default */
+#eventEditingSection {
+    display: none !important;
+}
+
+#eventEditingSection.show-editing {
+    display: flex !important;
+}
+
+/* Pointer Control Buttons */
+.pointer-controls {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 8px;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.pointer-controls .btn {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-width: 1px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pointer-controls .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+
+/* Active pointer styling */
+.pointer-controls .active-pointer {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.8), 0 0 0 4px currentColor;
+    transform: scale(1.05);
+    font-weight: bold;
+}
+
+.pointer-controls .btn-outline-success:hover {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.pointer-controls .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+/* Timeline marker highlighting */
+.timeline-marker.active-marker {
+    transform: translateX(-6px) scale(1.3);
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 0 0 6px currentColor;
+    z-index: 30;
+}
+
+.timeline-marker-start.active-marker {
+    background-color: #20c997;
+}
+
+.timeline-marker-end.active-marker {
+    background-color: #fd7e14;
+}
+
+/* Marker time display */
+.marker-time-display {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 35;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.timeline-marker-start .marker-time-display {
+    background: rgba(40, 167, 69, 0.9);
+}
+
+.timeline-marker-end .marker-time-display {
+    background: rgba(220, 53, 69, 0.9);
+}
+
+/* Make markers clickable */
+.timeline-marker {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.timeline-marker:hover {
+    transform: translateX(-6px) scale(1.15);
+}
+
+/* Video control highlighting during editing */
+.video-controls-editing .btn {
+    position: relative;
+}
+
+.video-controls-editing .btn::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.video-controls-editing .btn:hover::after {
+    border-color: #ffc107;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.4);
+}
+
+/* Range playback mode styling */
+.range-playback-mode {
+    background: linear-gradient(135deg, #28a745, #20c997) !important;
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+    animation: rangePlaybackPulse 2s ease-in-out infinite;
+}
+
+@keyframes rangePlaybackPulse {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3); }
+    50% { box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.5); }
+}
+
+.range-playback-mode::before {
+    content: '📐';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 12px;
+    background: #28a745;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Enhanced Video Player Active State */
+.video-player-active {
+    transform: scale(1.02);
+    box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
+    border: 3px solid #007bff;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1070;
+}
+
+.video-player-active::before {
+    content: '🎬 EDITING MODE';
+    position: absolute;
+    top: -35px;
+    left: 0;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+    z-index: 1071;
+}
+
+/* Modal positioning for editing mode */
+.modal.editing-mode {
+    z-index: 1060;
+    display: flex !important;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0;
+}
+
+.modal.editing-mode .modal-dialog {
+    margin: 0;
+    width: 40vw;
+    max-width: none;
+    min-width: 350px;
+    position: fixed;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: auto;
+    display: flex;
+    align-items: center;
+}
+
+/* Remove Bootstrap fade transition for editing mode */
+.modal.editing-mode.fade .modal-dialog {
+    transition: none !important;
+    transform: translateY(-50%) !important;
+}
+
+.modal.editing-mode.fade {
+    transition: none !important;
+}
+
+
+/* Backdrop adjustments for editing mode */
+.modal-backdrop.editing-mode {
+    z-index: 1050;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+/* Ensure timeline markers stay above modal backdrop */
+.timeline-marker,
+.timeline-cursor,
+.event-duration-highlight {
+    z-index: 1080 !important;
+}
+
+/* Video container enhancements */
+.video-container-editing {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+/* Timeline enhancement for editing mode */
+.timeline-editing-active {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 2px solid #007bff;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1400px) {
+    .modal.editing-mode .modal-dialog {
+        width: 45vw;
+        min-width: 320px;
+    }
+    
+    .video-player-active {
+        transform: scale(1.01);
+    }
+}
+
+@media (max-width: 768px) {
+    .modal.editing-mode {
+        justify-content: center;
+    }
+    
+    .modal.editing-mode .modal-dialog {
+        width: 90vw;
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        min-width: 280px;
+    }
+    
+    .video-player-active::before {
+        font-size: 10px;
+        padding: 3px 10px;
+        top: -30px;
+    }
 }
 
 /* Video selection card styling */
@@ -403,6 +875,48 @@ body.ui-disabled::after {
     z-index: 9999;
     pointer-events: none;
 }
+
+/* Event bounding box styles */
+.event-bounding-box {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background-color: rgba(255, 193, 7, 0.3);
+    border: 2px solid #ffc107;
+    border-radius: 3px;
+    cursor: move;
+    z-index: 15;
+}
+
+.bounding-handle {
+    position: absolute;
+    top: 0;
+    width: 8px;
+    height: 100%;
+    background-color: #ffc107;
+    cursor: ew-resize;
+    border-radius: 2px;
+}
+
+.bounding-start {
+    left: -4px;
+}
+
+.bounding-end {
+    right: -4px;
+}
+
+.bounding-body {
+    position: absolute;
+    top: 0;
+    left: 4px;
+    right: 4px;
+    height: 100%;
+    background-color: rgba(255, 193, 7, 0.2);
+}
+
+
+
 
 
 
