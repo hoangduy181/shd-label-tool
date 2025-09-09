@@ -110,8 +110,8 @@ def _format_annotation_for_webapp(annotation: dict) -> dict:
         "visibility": annotation.get("visibility", "visible"),
         # "gameTime": annotation["gameTime"],
         "seconds": int(annotation["position"])/1000,
-        "startTime": float(start_time, 2),
-        "endTime": float(end_time)  
+        "startTime": float(f"{start_time:.2f}"),
+        "endTime": float(f"{end_time:.2f}")  
     }
 
 @app.route('/select_video/<path:filename>')
