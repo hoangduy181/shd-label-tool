@@ -97,7 +97,12 @@ def get_videos():
     return jsonify(videos)
 
 def _format_annotation_for_webapp(annotation: dict) -> dict:
-    
+    start_time = annotation.get("start_time", "")
+    end_time = annotation.get("end_time", "")
+    if start_time == "":
+        start_time = int(annotation["position"])/1000
+    if end_time == "":
+        end_time = int(annotation["position"])/1000 + 10
     return {
         "label": reversed_label_to_event.get(annotation.get("label")),
         # "position": annotation["position"],
@@ -105,8 +110,8 @@ def _format_annotation_for_webapp(annotation: dict) -> dict:
         "visibility": annotation.get("visibility", "visible"),
         # "gameTime": annotation["gameTime"],
         "seconds": int(annotation["position"])/1000,
-        "startTime": int(annotation.get("start_time", "")),
-        "endTime": int(annotation.get("end_time", ""))  
+        "startTime": float(start_time, 2),
+        "endTime": float(end_time)  
     }
 
 @app.route('/select_video/<path:filename>')
